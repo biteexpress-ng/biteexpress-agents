@@ -1,0 +1,12 @@
+BiteExpress Brand Color Palette
+
+Primary: #000000
+Secondary: #DE1600
+Accent: #FF6B4A
+Neutral 900: #111111
+Neutral 600: #6B7280
+Neutral 200: #E5E7EB
+Neutral 0: #FFFFFF
+Success: #16A34A
+Warning: #F59E0B
+Error: #DC2626
