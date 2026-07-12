@@ -22,6 +22,15 @@ Two codebases, clean split:
   **agents.bite.express**, deployed like biteexpress-web-app (Vercel), consuming
   only the API. Mobile-first, installable, branded from `branding_materials/`.
 
+**Design consistency requirement:** the agent PWA's UI/UX must be visually
+consistent with `biteexpress-web` (bite.express) and `biteexpress-web-app`
+(app.bite.express) — same design language, component patterns, and brand palette.
+Those two codebases are the style reference for every new screen.
+
+**Process requirement:** every frontend build step in this project must load the
+`frontend-design`, `impeccable`, and `ui-ux-pro-max` skills before UI code is
+written.
+
 ## 2. Configuration: everything monetary is admin-tunable
 
 All program parameters live in `business_settings`, editable from the admin panel
