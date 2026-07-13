@@ -10,12 +10,17 @@ zustand, and react-hook-form + zod. The visual system is ported from
 `biteexpress-web-app` (see `DESIGN.md`) so this app is recognizably part of the
 `bite.express` / `app.bite.express` family.
 
-**Scope shipped (Phase A2 + B2 + C2):** login, password setup, training,
+**Scope shipped (Phase A2 + B2 + C2 + D2):** login, password setup, training,
 certification quiz, certified home (referral code + live balance/customer
-numbers), **customers** (`/customers`), **earnings** (`/earnings` with the
-eligibility-aware withdraw CTA), **assisted signup** (`/signup-customer`),
-**KYC** (status-driven, on `/profile`), and **withdrawals** (`/withdraw` +
-payout history). Challenges and notifications are Phase D.
+numbers + weekly-challenge strip), **customers** (`/customers`, with this
+week's signup count when a challenge is active), **earnings** (`/earnings` with
+the eligibility-aware withdraw CTA), **assisted signup** (`/signup-customer`),
+**KYC** (status-driven, on `/profile`), **withdrawals** (`/withdraw` + payout
+history), and **weekly challenges** (`/challenges`: live tier progress, the
+bonus on the line, the informational week deadline, and past wins). The
+challenge feature is driven entirely by `GET /challenge`; when it returns
+`active: false` the strip and the `/challenges` route disappear (deep links
+redirect home). Notifications are a later phase.
 
 ## Requirements
 
@@ -68,14 +73,14 @@ src/
     (auth)/          login, setup-password (unguarded, no bottom nav)
     (app)/           home, training, quiz, customers, earnings,
                      withdraw, signup-customer, profile (KYC lives here),
-                     (auth-guarded, gated)
+                     challenges (auth-guarded, gated)
     layout.tsx       fonts, metadata, favicon
     globals.css      ported @theme tokens + brand utilities
     manifest.ts      PWA manifest
   components/
     ui/              button, input, field, alert, dialog, skeleton, ...
     layout/          app-header, bottom-nav
-    training/ quiz/ home/   feature components
+    training/ quiz/ home/ challenges/   feature components
   lib/api/           typed client + endpoint functions + types
   stores/auth.ts     zustand session store (persisted)
 ```
