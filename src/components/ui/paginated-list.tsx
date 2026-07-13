@@ -120,7 +120,12 @@ export function PaginatedList<T, R extends { pagination: Pagination }>({
   }
 
   if (items.length === 0) {
-    return <>{renderEmpty()}</>;
+    return (
+      <div>
+        {first && renderHeader?.(first)}
+        {renderEmpty()}
+      </div>
+    );
   }
 
   const hasMore = pagination
