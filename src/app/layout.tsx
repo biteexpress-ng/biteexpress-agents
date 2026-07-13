@@ -17,7 +17,7 @@ export const metadata: Metadata = {
       { url: "/brand/biteexpress_favicon.ico", sizes: "any" },
       { url: "/brand/biteexpress_favicon.png", type: "image/png" },
     ],
-    apple: "/brand/biteexpress_favicon.png",
+    apple: "/icons/apple-touch-icon.png",
   },
 };
 
