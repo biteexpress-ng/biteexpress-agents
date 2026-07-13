@@ -2,16 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { GraduationCap, House, User } from "lucide-react";
+import { GraduationCap, House, User, Users, Wallet } from "lucide-react";
 import { useAuthStore } from "@/stores/auth";
 import { cn } from "@/lib/utils";
 
-/**
- * Certified-only bottom navigation. Three live destinations; Customers and
- * Earnings arrive in Phase B and are intentionally NOT rendered as empty slots.
- */
+/** Certified-only bottom navigation — five items, the platform maximum. */
 const ITEMS = [
   { href: "/", label: "Home", icon: House },
+  { href: "/customers", label: "Customers", icon: Users },
+  { href: "/earnings", label: "Earnings", icon: Wallet },
   { href: "/training", label: "Training", icon: GraduationCap },
   { href: "/profile", label: "Profile", icon: User },
 ] as const;

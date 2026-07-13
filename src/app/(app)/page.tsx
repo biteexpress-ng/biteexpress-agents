@@ -1,7 +1,13 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { ChevronRight } from "lucide-react";
+import { getCustomers, getEarnings } from "@/lib/api/agent";
 import { useAuthStore } from "@/stores/auth";
+import { formatNaira } from "@/lib/format";
 import { ReferralCodeCard } from "@/components/home/referral-code-card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function greetingFor(hour: number): string {
   if (hour < 12) return "Good morning";
@@ -32,15 +38,95 @@ export default function HomePage() {
         </div>
       )}
 
-      <div className="mt-6 rounded-2xl border border-border bg-surface p-5 shadow-soft">
-        <h2 className="font-sans text-base font-semibold text-ink-900">
-          What&apos;s next
-        </h2>
-        <p className="mt-1.5 text-sm text-muted-foreground">
-          Customer tracking and earnings are coming soon. Every signup with your
-          code already counts — keep sharing it.
-        </p>
-      </div>
+      <HomeNumbers />
     </section>
+  );
+}
+
+function HomeNumbers() {
+  const [state, setState] = useState<"loading" | "error" | "ready">("loading");
+  const [withdrawable, setWithdrawable] = useState(0);
+  const [customerCount, setCustomerCount] = useState(0);
+
+  useEffect(() => {
+    let active = true;
+    Promise.all([getEarnings(1), getCustomers(1)])
+      .then(([earnings, customers]) => {
+        if (!active) return;
+        setWithdrawable(earnings.balances.withdrawable);
+        setCustomerCount(customers.stats.total);
+        setState("ready");
+      })
+      .catch(() => {
+        // Quiet: the home numbers are a bonus; a failure must never block the
+        // referral-code card, which is the point of this screen.
+        if (active) setState("error");
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  if (state === "error") return null;
+
+  return (
+    <div className="mt-6 flex flex-col gap-3">
+      <NumberCard
+        href="/earnings"
+        label="Withdrawable balance"
+        loading={state === "loading"}
+        value={formatNaira(withdrawable)}
+        hint={
+          state === "ready" && withdrawable === 0
+            ? "Your first commission lands when a customer's order is delivered."
+            : undefined
+        }
+      />
+      <NumberCard
+        href="/customers"
+        label="Customers"
+        loading={state === "loading"}
+        value={String(customerCount)}
+        hint={
+          state === "ready" && customerCount === 0
+            ? "Sign up your first one, or share your code."
+            : undefined
+        }
+      />
+    </div>
+  );
+}
+
+function NumberCard({
+  href,
+  label,
+  loading,
+  value,
+  hint,
+}: {
+  href: string;
+  label: string;
+  loading: boolean;
+  value: string;
+  hint?: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-5 shadow-soft transition-colors hover:bg-canvas-sunken/50"
+    >
+      <div className="min-w-0 flex-1">
+        <p className="text-sm text-muted-foreground">{label}</p>
+        {loading ? (
+          <Skeleton className="mt-1.5 h-8 w-28" />
+        ) : (
+          <p className="mt-1 text-2xl font-semibold tabular-nums text-ink-900">
+            {value}
+          </p>
+        )}
+        {hint && <p className="mt-1 text-sm text-muted-foreground">{hint}</p>}
+      </div>
+      <ChevronRight className="size-5 shrink-0 text-ink-400" aria-hidden />
+    </Link>
   );
 }
