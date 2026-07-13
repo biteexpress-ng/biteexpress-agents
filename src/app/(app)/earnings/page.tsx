@@ -1,7 +1,14 @@
 "use client";
 
+import Link from "next/link";
 import { getEarnings } from "@/lib/api/agent";
-import type { EarningsResponse, LedgerEntry } from "@/lib/api/types";
+import type {
+  EarningsResponse,
+  LedgerEntry,
+  WithdrawEligibility,
+} from "@/lib/api/types";
+import { gateMessage } from "@/lib/api/messages";
+import { buttonClassName } from "@/components/ui/button";
 import { PaginatedList } from "@/components/ui/paginated-list";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BalanceHeader } from "@/components/earnings/balance-header";
@@ -20,6 +27,9 @@ export default function EarningsPage() {
           renderHeader={(first) => (
             <div className="mb-8">
               <BalanceHeader balances={first.balances} />
+              <div className="mt-6">
+                <WithdrawCta eligibility={first.eligibility} />
+              </div>
             </div>
           )}
           renderItem={(entry) => <LedgerRow entry={entry} />}
@@ -36,6 +46,48 @@ export default function EarningsPage() {
         />
       </div>
     </section>
+  );
+}
+
+/**
+ * The withdraw CTA never disappears: when blocked, it shows a disabled button
+ * plus the plain reason from the shared copy map, and a route to fix it.
+ */
+function WithdrawCta({ eligibility }: { eligibility: WithdrawEligibility }) {
+  if (eligibility.can_withdraw) {
+    return (
+      <Link href="/withdraw" className={buttonClassName({ fullWidth: true })}>
+        Withdraw
+      </Link>
+    );
+  }
+
+  const message = eligibility.reason
+    ? gateMessage(eligibility.reason, { min: eligibility.min_amount })
+    : "Withdrawals aren't available right now.";
+
+  return (
+    <div>
+      <button
+        type="button"
+        disabled
+        className={buttonClassName({
+          fullWidth: true,
+          className: "pointer-events-none opacity-50",
+        })}
+      >
+        Withdraw
+      </button>
+      <p className="mt-2 text-center text-sm text-muted-foreground">{message}</p>
+      {eligibility.reason === "kyc-not-verified" && (
+        <Link
+          href="/profile"
+          className="mt-1 block text-center text-sm font-medium text-brand-red"
+        >
+          Set up payouts
+        </Link>
+      )}
+    </div>
   );
 }
 
