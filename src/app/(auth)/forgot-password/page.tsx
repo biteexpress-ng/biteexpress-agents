@@ -2,29 +2,24 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { TriangleAlert } from "lucide-react";
-import { login } from "@/lib/api/agent";
+import { MailCheck, TriangleAlert } from "lucide-react";
+import { forgotPassword } from "@/lib/api/agent";
 import { ApiRequestError } from "@/lib/api/types";
-import { useAuthStore } from "@/stores/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/ui/field";
-import { PasswordInput } from "@/components/ui/password-input";
 import { Alert } from "@/components/ui/alert";
 
 const schema = z.object({
   login: z.string().trim().min(1, "Enter your email or phone number"),
-  password: z.string().min(1, "Enter your password"),
 });
 type FormValues = z.infer<typeof schema>;
 
-export default function LoginPage() {
-  const router = useRouter();
-  const setSession = useAuthStore((s) => s.setSession);
+export default function ForgotPasswordPage() {
+  const [sent, setSent] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
   const {
@@ -33,19 +28,16 @@ export default function LoginPage() {
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { login: "", password: "" },
+    defaultValues: { login: "" },
   });
 
   async function onSubmit(values: FormValues) {
     setFormError(null);
     try {
-      const { token, agent } = await login({
-        login: values.login,
-        password: values.password,
-        platform: "web",
-      });
-      setSession(token, agent);
-      router.replace(agent.certified ? "/" : "/training");
+      await forgotPassword({ login: values.login });
+      // The API is deliberately generic (it never says whether an account
+      // exists), so success just means "we processed it".
+      setSent(true);
     } catch (err) {
       setFormError(
         err instanceof ApiRequestError
@@ -55,12 +47,42 @@ export default function LoginPage() {
     }
   }
 
+  if (sent) {
+    return (
+      <section className="fade-up">
+        <div className="rounded-2xl border border-border bg-surface p-6 text-center shadow-soft">
+          <span className="mx-auto grid size-12 place-items-center rounded-full bg-success-soft text-[color:var(--color-success-strong)]">
+            <MailCheck className="size-6" aria-hidden />
+          </span>
+          <h1 className="mt-4 font-sans text-xl font-semibold text-ink-900">
+            Check your email
+          </h1>
+          <p className="mt-2 text-base text-muted-foreground">
+            If an account matches what you entered, we&apos;ve sent a link to
+            reset your password. It expires in 1 hour.
+          </p>
+        </div>
+        <p className="mt-6 text-center text-sm text-muted-foreground">
+          <Link
+            href="/login"
+            className="font-medium text-brand-red underline-offset-4 hover:underline"
+          >
+            Back to sign in
+          </Link>
+        </p>
+      </section>
+    );
+  }
+
   return (
     <section className="fade-up">
       <header className="mb-8">
-        <h1 className="font-sans text-2xl font-semibold text-ink-900">Sign in</h1>
+        <h1 className="font-sans text-2xl font-semibold text-ink-900">
+          Reset password
+        </h1>
         <p className="mt-1.5 text-base text-muted-foreground">
-          Welcome back. Enter your details to continue.
+          Enter your email or phone and we&apos;ll send you a link to set a new
+          password.
         </p>
       </header>
 
@@ -92,32 +114,18 @@ export default function LoginPage() {
           />
         </Field>
 
-        <Field label="Password" htmlFor="password" error={errors.password?.message}>
-          <PasswordInput
-            id="password"
-            autoComplete="current-password"
-            aria-invalid={!!errors.password}
-            aria-describedby={errors.password ? "password-error" : undefined}
-            {...register("password")}
-          />
-        </Field>
-
-        <div className="-mt-2 text-right">
-          <Link
-            href="/forgot-password"
-            className="text-sm font-medium text-brand-red underline-offset-4 hover:underline"
-          >
-            Forgot password?
-          </Link>
-        </div>
-
         <Button type="submit" fullWidth loading={isSubmitting} className="mt-1">
-          Sign in
+          Send reset link
         </Button>
       </form>
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
-        Trouble signing in? Contact your BiteExpress agent lead.
+        <Link
+          href="/login"
+          className="font-medium text-brand-red underline-offset-4 hover:underline"
+        >
+          Back to sign in
+        </Link>
       </p>
     </section>
   );

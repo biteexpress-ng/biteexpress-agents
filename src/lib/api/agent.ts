@@ -39,6 +39,12 @@ export function logout(): Promise<{ message: string }> {
   return api("/auth/logout", { method: "POST" });
 }
 
+export function forgotPassword(input: {
+  login: string;
+}): Promise<{ message: string }> {
+  return api("/auth/forgot-password", { method: "POST", body: input, auth: false });
+}
+
 export function getMe(): Promise<{ agent: AgentProfile }> {
   return api("/me");
 }
