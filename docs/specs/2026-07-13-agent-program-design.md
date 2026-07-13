@@ -114,8 +114,13 @@ config, not seeded rows.
 **Accrual rules (fraud-resistant by construction):**
 
 - Order-lifecycle hook (observer-based): when an order by a referred customer
-  reaches **delivered**, create a `confirmed` commission = configured % of order
-  subtotal, credit `withdrawable_balance`. Lifetime duration.
+  reaches **delivered**, create a `confirmed` commission = configured % of the
+  order amount, credit `withdrawable_balance`. Lifetime duration.
+  **Decision (B1 gate, 2026-07-13):** the commission base is `orders.order_amount`
+  — the order TOTAL as used by the gamification engine — not a separately-computed
+  goods subtotal (this schema stores no such field). Finance must set
+  `agent_commission_rate` knowing it applies to the total; the rate snapshot on
+  each ledger row preserves auditability across rate changes.
 - No commission below the configured order floor.
 - Refund → reversal entry claws back the commission and debits the balance.
 - One agent per customer forever (unique constraint).
