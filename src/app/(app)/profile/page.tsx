@@ -8,6 +8,24 @@ import { useAuthStore } from "@/stores/auth";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { KycCard } from "@/components/kyc/kyc-card";
+import type { KycStatus } from "@/lib/api/types";
+import { cn } from "@/lib/utils";
+
+const KYC_BADGE: Record<KycStatus, { label: string; cls: string }> = {
+  verified: {
+    label: "Payouts verified",
+    cls: "bg-success-soft text-[color:var(--color-success-strong)]",
+  },
+  pending: {
+    label: "Payouts in review",
+    cls: "bg-warning-soft text-[color:var(--color-warning)]",
+  },
+  rejected: { label: "Payouts need fixing", cls: "bg-error-soft text-error" },
+  incomplete: {
+    label: "Payouts not set up",
+    cls: "bg-canvas-sunken text-ink-500",
+  },
+};
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
@@ -26,6 +44,7 @@ export default function ProfilePage() {
   const clear = useAuthStore((s) => s.clear);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [kycStatus, setKycStatus] = useState<KycStatus | null>(null);
 
   async function onConfirm() {
     setLoading(true);
@@ -50,7 +69,7 @@ export default function ProfilePage() {
         <Row label="Phone" value={agent.phone} />
         <div className="flex items-center justify-between gap-4 px-4 py-3.5">
           <dt className="text-sm text-muted-foreground">Status</dt>
-          <dd>
+          <dd className="flex flex-col items-end gap-1.5">
             {agent.certified ? (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-success-soft px-2.5 py-1 text-sm font-medium text-[color:var(--color-success-strong)]">
                 <BadgeCheck className="size-4" aria-hidden />
@@ -61,12 +80,22 @@ export default function ProfilePage() {
                 {agent.status}
               </span>
             )}
+            {kycStatus && (
+              <span
+                className={cn(
+                  "inline-flex items-center rounded-full px-2.5 py-1 text-sm font-medium",
+                  KYC_BADGE[kycStatus].cls,
+                )}
+              >
+                {KYC_BADGE[kycStatus].label}
+              </span>
+            )}
           </dd>
         </div>
       </dl>
 
       <div className="mt-6">
-        <KycCard />
+        <KycCard onStatus={setKycStatus} />
       </div>
 
       <Button

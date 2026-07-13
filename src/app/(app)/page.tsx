@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Wallet } from "lucide-react";
 import { getCustomers, getEarnings } from "@/lib/api/agent";
 import { useAuthStore } from "@/stores/auth";
 import { formatNaira } from "@/lib/format";
@@ -46,6 +46,8 @@ export default function HomePage() {
 function HomeNumbers() {
   const [state, setState] = useState<"loading" | "error" | "ready">("loading");
   const [withdrawable, setWithdrawable] = useState(0);
+  const [pending, setPending] = useState(0);
+  const [kycStatus, setKycStatus] = useState<string>("incomplete");
   const [customerCount, setCustomerCount] = useState(0);
 
   useEffect(() => {
@@ -54,6 +56,8 @@ function HomeNumbers() {
       .then(([earnings, customers]) => {
         if (!active) return;
         setWithdrawable(earnings.balances.withdrawable);
+        setPending(earnings.balances.pending);
+        setKycStatus(earnings.eligibility.kyc_status);
         setCustomerCount(customers.stats.total);
         setState("ready");
       })
@@ -69,18 +73,22 @@ function HomeNumbers() {
 
   if (state === "error") return null;
 
+  const ready = state === "ready";
+  const balanceHint =
+    ready && pending > 0
+      ? `${formatNaira(pending)} on its way to your bank.`
+      : ready && withdrawable === 0
+        ? "Your first commission lands when a customer's order is delivered."
+        : undefined;
+
   return (
     <div className="mt-6 flex flex-col gap-3">
       <NumberCard
         href="/earnings"
-        label="Withdrawable balance"
+        label="Available balance"
         loading={state === "loading"}
         value={formatNaira(withdrawable)}
-        hint={
-          state === "ready" && withdrawable === 0
-            ? "Your first commission lands when a customer's order is delivered."
-            : undefined
-        }
+        hint={balanceHint}
       />
       <NumberCard
         href="/customers"
@@ -88,11 +96,30 @@ function HomeNumbers() {
         loading={state === "loading"}
         value={String(customerCount)}
         hint={
-          state === "ready" && customerCount === 0
+          ready && customerCount === 0
             ? "Sign up your first one, or share your code."
             : undefined
         }
       />
+
+      {ready && kycStatus === "incomplete" && withdrawable > 0 && (
+        <Link
+          href="/profile"
+          className="flex items-start gap-3 rounded-2xl border border-brand-red/30 bg-[color-mix(in_srgb,var(--color-brand-red)_5%,#ffffff)] p-4 shadow-soft transition-colors hover:bg-[color-mix(in_srgb,var(--color-brand-red)_8%,#ffffff)]"
+        >
+          <span className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-full bg-brand-red/10 text-brand-red">
+            <Wallet className="size-5" aria-hidden />
+          </span>
+          <div className="min-w-0">
+            <p className="text-base font-medium text-ink-900">
+              Set up payouts to withdraw
+            </p>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              You&apos;ve earned money — add your details to cash it out.
+            </p>
+          </div>
+        </Link>
+      )}
     </div>
   );
 }
