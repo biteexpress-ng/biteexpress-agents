@@ -59,6 +59,9 @@
 
   /* ── Semantic ────────────────────────────────────────────────────── */
   --color-success: #10b981;
+  /* Accessible green for text/icons on light surfaces (#10b981 is too light
+     for body contrast). Used for "done" / credited states. Agent-domain add. */
+  --color-success-strong: #047857;
   --color-success-soft: #ecfdf5;
   --color-warning: #f59e0b;
   --color-warning-soft: #fffbeb;
