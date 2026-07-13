@@ -7,6 +7,7 @@ import { getCustomers, getEarnings } from "@/lib/api/agent";
 import { useAuthStore } from "@/stores/auth";
 import { formatNaira } from "@/lib/format";
 import { ReferralCodeCard } from "@/components/home/referral-code-card";
+import { ChallengeStrip } from "@/components/challenges/challenge-strip";
 import { Skeleton } from "@/components/ui/skeleton";
 
 function greetingFor(hour: number): string {
@@ -39,6 +40,7 @@ export default function HomePage() {
       )}
 
       <HomeNumbers />
+      <ChallengeStrip className="mt-3" />
     </section>
   );
 }

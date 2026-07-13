@@ -1,8 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { UserPlus } from "lucide-react";
-import { getCustomers } from "@/lib/api/agent";
+import { getChallenge, getCustomers } from "@/lib/api/agent";
 import type { CustomerList, ReferredCustomer } from "@/lib/api/types";
 import { buttonClassName } from "@/components/ui/button";
 import { PaginatedList } from "@/components/ui/paginated-list";
@@ -10,6 +11,24 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { CustomerRow } from "@/components/customers/customer-row";
 
 export default function CustomersPage() {
+  // When the challenge is active, surface this week's signup count next to the
+  // customer totals — one screen from the signup CTA. Off/failed → simply absent.
+  const [weeklySignups, setWeeklySignups] = useState<number | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    getChallenge()
+      .then((c) => {
+        if (active && c.active && c.current) setWeeklySignups(c.current.signups);
+      })
+      .catch(() => {
+        // Silent: the weekly stat is a courtesy, never blocks the customer list.
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <section className="fade-up">
       <h1 className="font-sans text-xl font-semibold text-ink-900">Customers</h1>
@@ -39,6 +58,15 @@ export default function CustomersPage() {
                 {first.stats.activated}
               </span>{" "}
               active
+              {weeklySignups !== null && (
+                <>
+                  {" · "}
+                  <span className="font-medium tabular-nums text-ink-900">
+                    {weeklySignups}
+                  </span>{" "}
+                  this week
+                </>
+              )}
             </p>
           )}
           renderItem={(customer) => <CustomerRow customer={customer} />}
