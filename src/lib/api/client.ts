@@ -5,7 +5,8 @@ const BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 const PREFIX = "/api/v1/agent";
 
 export interface ApiOptions extends Omit<RequestInit, "body"> {
-  /** JSON body — serialized automatically. */
+  /** JSON body — serialized automatically. A FormData body is sent as
+   *  multipart (the browser sets the Content-Type + boundary itself). */
   body?: unknown;
   /** Attach the stored Bearer token. Default true; set false for login/setup. */
   auth?: boolean;
@@ -57,6 +58,8 @@ function extractErrors(data: unknown, status: number): ApiError[] {
 export async function api<T>(path: string, opts: ApiOptions = {}): Promise<T> {
   const { body, auth = true, headers, ...rest } = opts;
   const token = auth ? useAuthStore.getState().token : null;
+  const isFormData =
+    typeof FormData !== "undefined" && body instanceof FormData;
 
   let res: Response;
   try {
@@ -64,11 +67,18 @@ export async function api<T>(path: string, opts: ApiOptions = {}): Promise<T> {
       ...rest,
       headers: {
         Accept: "application/json",
-        ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
+        ...(body !== undefined && !isFormData
+          ? { "Content-Type": "application/json" }
+          : {}),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...headers,
       },
-      body: body !== undefined ? JSON.stringify(body) : undefined,
+      body:
+        body === undefined
+          ? undefined
+          : isFormData
+            ? (body as FormData)
+            : JSON.stringify(body),
     });
   } catch {
     // Network / DNS / offline — give the UI something honest to show.

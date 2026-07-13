@@ -106,13 +106,68 @@ export interface LedgerEntry {
   created_at: string;
 }
 
+export type WithdrawReason =
+  | "kyc-not-verified"
+  | "below-minimum"
+  | "request-pending";
+
+export interface WithdrawEligibility {
+  can_withdraw: boolean;
+  min_amount: number;
+  kyc_status: KycStatus;
+  reason: WithdrawReason | null;
+}
+
 export interface EarningsResponse {
   balances: { withdrawable: number; pending: number; earned_total: number };
   ledger: LedgerEntry[];
+  eligibility: WithdrawEligibility;
   pagination: Pagination;
 }
 
 export interface AssistedConfirmResponse {
   customer: { name_masked: string; status: string };
   message?: string;
+}
+
+export type KycStatus = "incomplete" | "pending" | "verified" | "rejected";
+
+export type IdentityType =
+  | "nin"
+  | "drivers_license"
+  | "voters_card"
+  | "passport";
+
+export interface KycStatusResponse {
+  kyc_status: KycStatus;
+  rejection_reason: string | null;
+  photo_url: string | null;
+  identity_type: IdentityType | null;
+  identity_image_url: string | null;
+  bank: {
+    bank_name: string | null;
+    account_number_masked: string | null;
+    account_name: string | null;
+  };
+}
+
+export interface WithdrawRequestResult {
+  id: number;
+  amount: number;
+  status: "pending";
+  created_at: string;
+}
+
+export interface WithdrawalEntry {
+  id: number;
+  amount: number;
+  status: "pending" | "approved" | "denied";
+  admin_note: string | null;
+  created_at: string;
+  processed_at: string | null;
+}
+
+export interface WithdrawalsResponse {
+  withdrawals: WithdrawalEntry[];
+  pagination: Pagination;
 }

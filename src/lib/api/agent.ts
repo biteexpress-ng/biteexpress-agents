@@ -4,10 +4,13 @@ import type {
   AssistedConfirmResponse,
   CustomerList,
   EarningsResponse,
+  KycStatusResponse,
   QuizInfo,
   QuizResult,
   QuizStart,
   TrainingVideo,
+  WithdrawalsResponse,
+  WithdrawRequestResult,
 } from "./types";
 
 export function setupPassword(input: {
@@ -88,4 +91,24 @@ export function confirmAssistedSignup(input: {
   last_name: string;
 }): Promise<AssistedConfirmResponse> {
   return api("/customers/assisted/confirm", { method: "POST", body: input });
+}
+
+export function getKyc(): Promise<KycStatusResponse> {
+  return api("/kyc");
+}
+
+export function submitKyc(
+  form: FormData,
+): Promise<{ message: string; kyc_status: "pending" }> {
+  return api("/kyc", { method: "POST", body: form });
+}
+
+export function requestWithdraw(input: {
+  amount: number;
+}): Promise<{ request: WithdrawRequestResult }> {
+  return api("/withdraw", { method: "POST", body: input });
+}
+
+export function getWithdrawals(page = 1): Promise<WithdrawalsResponse> {
+  return api(`/withdrawals?page=${page}`);
 }
