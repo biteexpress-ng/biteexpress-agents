@@ -1,0 +1,172 @@
+"use client";
+
+import { useState } from "react";
+import { ArrowLeft } from "lucide-react";
+import { submitQuiz } from "@/lib/api/agent";
+import {
+  ApiRequestError,
+  type QuizResult,
+  type QuizStart,
+} from "@/lib/api/types";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Alert } from "@/components/ui/alert";
+import { QuestionStep } from "./question-step";
+
+function thresholdLabel(passMark: number, total: number): string {
+  return passMark <= total ? `${passMark} of ${total}` : `${passMark}%`;
+}
+
+interface QuizRunnerProps {
+  quiz: QuizStart;
+  onDone: (result: QuizResult) => void;
+}
+
+export function QuizRunner({ quiz, onDone }: QuizRunnerProps) {
+  const questions = quiz.questions;
+  const total = questions.length;
+
+  const [phase, setPhase] = useState<"intro" | "questions">("intro");
+  const [step, setStep] = useState(0);
+  const [answers, setAnswers] = useState<Record<number, number>>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const current = questions[step];
+  const answeredCount = questions.filter(
+    (q) => answers[q.id] !== undefined,
+  ).length;
+  const allAnswered = answeredCount === total;
+  const isLast = step === total - 1;
+
+  async function submit() {
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      const result = await submitQuiz({
+        attempt_id: quiz.attempt_id,
+        answers,
+      });
+      onDone(result);
+    } catch (err) {
+      setSubmitError(
+        err instanceof ApiRequestError
+          ? err.message
+          : "Couldn't submit your quiz. Check your connection and try again.",
+      );
+      setSubmitting(false);
+    }
+  }
+
+  if (phase === "intro") {
+    return (
+      <section className="fade-up">
+        <h1 className="font-sans text-xl font-semibold text-ink-900">
+          Certification quiz
+        </h1>
+        <div className="mt-6 rounded-2xl border border-border bg-surface p-5 shadow-card">
+          <dl className="flex items-stretch divide-x divide-border text-center">
+            <div className="flex-1 px-2">
+              <dt className="text-sm text-muted-foreground">Questions</dt>
+              <dd className="mt-1 text-2xl font-semibold tabular-nums text-ink-900">
+                {total}
+              </dd>
+            </div>
+            <div className="flex-1 px-2">
+              <dt className="text-sm text-muted-foreground">To pass</dt>
+              <dd className="mt-1 text-2xl font-semibold tabular-nums text-ink-900">
+                {thresholdLabel(quiz.pass_mark, total)}
+              </dd>
+            </div>
+          </dl>
+          <p className="mt-5 text-sm text-muted-foreground">
+            Answer every question. You can retake after a short break if you
+            don&apos;t pass.
+          </p>
+          <Button className="mt-5" fullWidth onClick={() => setPhase("questions")}>
+            Begin
+          </Button>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section>
+      <div className="mb-5">
+        <div className="flex items-center justify-between gap-3">
+          <button
+            type="button"
+            onClick={() => setStep((s) => Math.max(0, s - 1))}
+            disabled={step === 0}
+            aria-label="Previous question"
+            className="grid size-10 cursor-pointer place-items-center rounded-lg text-ink-600 transition-colors hover:bg-canvas-sunken hover:text-ink-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-red disabled:pointer-events-none disabled:opacity-30"
+          >
+            <ArrowLeft className="size-5" aria-hidden />
+          </button>
+          <span className="text-sm font-medium tabular-nums text-muted-foreground">
+            Question {step + 1} of {total}
+          </span>
+          <span className="size-10" aria-hidden />
+        </div>
+
+        <ol className="mt-3 flex items-center gap-1.5" aria-hidden>
+          {questions.map((q, i) => (
+            <li
+              key={q.id}
+              className={cn(
+                "h-1.5 flex-1 rounded-full transition-colors",
+                i === step
+                  ? "bg-brand-red"
+                  : answers[q.id] !== undefined
+                    ? "bg-ink-400"
+                    : "bg-ink-200",
+              )}
+            />
+          ))}
+        </ol>
+      </div>
+
+      <div key={current.id} className="slide-in">
+        <QuestionStep
+          question={current}
+          selected={answers[current.id]}
+          onSelect={(i) =>
+            setAnswers((a) => ({ ...a, [current.id]: i }))
+          }
+        />
+      </div>
+
+      {submitError && (
+        <Alert tone="error" className="mt-5">
+          {submitError}
+        </Alert>
+      )}
+
+      <div className="mt-6">
+        {isLast ? (
+          <>
+            <Button
+              fullWidth
+              loading={submitting}
+              disabled={!allAnswered}
+              onClick={submit}
+            >
+              Submit quiz
+            </Button>
+            {!allAnswered && (
+              <p className="mt-2 text-center text-sm text-muted-foreground">
+                Answer all {total} questions to submit — {total - answeredCount}{" "}
+                left.
+              </p>
+            )}
+          </>
+        ) : (
+          <Button fullWidth onClick={() => setStep((s) => s + 1)}>
+            Next
+          </Button>
+        )}
+      </div>
+    </section>
+  );
+}
