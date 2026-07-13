@@ -5,16 +5,10 @@ import { RotateCcw } from "lucide-react";
 import type { QuizResult as QuizResultData } from "@/lib/api/types";
 import { buttonClassName, Button } from "@/components/ui/button";
 import { ReferralCodeCard } from "@/components/home/referral-code-card";
-
-/** Format a pass/score threshold whose unit (count vs percent) the API
- *  doesn't declare: treat values ≤ question count as a raw count. */
-function scoreLabel(value: number, total: number): string {
-  return value <= total ? `${value} of ${total}` : `${value}%`;
-}
+import { formatRemaining, useCountdown } from "@/lib/hooks/use-countdown";
 
 interface QuizResultProps {
   result: QuizResultData;
-  total: number;
   firstName: string;
   onDashboard: () => void;
   onRetry: () => void;
@@ -23,12 +17,14 @@ interface QuizResultProps {
 
 export function QuizResult({
   result,
-  total,
   firstName,
   onDashboard,
   onRetry,
   retrying,
 }: QuizResultProps) {
+  // Called unconditionally (hooks rule); harmless for the pass branch, where
+  // retry_at is absent and the countdown reports expired immediately.
+  const { remaining, expired } = useCountdown(result.retry_at);
   const passed = result.status === "passed" && result.certified;
 
   if (passed) {
@@ -75,20 +71,34 @@ export function QuizResult({
         Not quite this time
       </h1>
       <p className="mx-auto mt-3 max-w-xs text-base text-muted-foreground">
-        You got{" "}
+        You scored{" "}
         <span className="font-semibold tabular-nums text-ink-900">
-          {scoreLabel(result.score, total)}
-        </span>{" "}
-        right. You needed {scoreLabel(result.pass_mark, total)} to pass.
+          {result.score}%
+        </span>
+        . You needed{" "}
+        <span className="tabular-nums">{result.pass_mark}%</span> to pass.
       </p>
       <p className="mx-auto mt-4 max-w-xs text-base text-ink-800">
         Rewatch the videos and try again after a short break. You&apos;ve got this.
       </p>
 
+      {!expired && (
+        <p className="mt-6 text-sm text-muted-foreground">
+          You can try again in{" "}
+          <span
+            className="font-mono font-semibold tabular-nums text-ink-900"
+            aria-live="polite"
+          >
+            {formatRemaining(remaining)}
+          </span>
+        </p>
+      )}
+
       <Button
         fullWidth
-        className="mt-8"
+        className="mt-4"
         loading={retrying}
+        disabled={!expired}
         onClick={onRetry}
       >
         <RotateCcw className="size-5" aria-hidden />

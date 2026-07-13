@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { GraduationCap, TriangleAlert } from "lucide-react";
-import { startQuiz } from "@/lib/api/agent";
+import { getQuizInfo, startQuiz } from "@/lib/api/agent";
 import {
   ApiRequestError,
+  type QuizInfo,
   type QuizResult,
   type QuizStart,
 } from "@/lib/api/types";
@@ -44,6 +45,21 @@ export default function QuizPage() {
   const [result, setResult] = useState<QuizResult | null>(null);
   const [starting, setStarting] = useState(false);
   const [startError, setStartError] = useState<string | null>(null);
+  const [info, setInfo] = useState<QuizInfo | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    getQuizInfo()
+      .then((res) => {
+        if (active) setInfo(res);
+      })
+      .catch(() => {
+        // Non-blocking — the idle card still works without the preview numbers.
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   async function start() {
     setStarting(true);
@@ -91,7 +107,6 @@ export default function QuizPage() {
   }
 
   const firstName = (agent?.full_name ?? "").trim().split(/\s+/)[0] ?? "";
-  const total = quiz?.questions.length ?? 0;
 
   if (phase === "active" && quiz) {
     return <QuizRunner quiz={quiz} onDone={handleDone} />;
@@ -101,7 +116,6 @@ export default function QuizPage() {
     return (
       <QuizResultView
         result={result}
-        total={total}
         firstName={firstName}
         onDashboard={() => router.replace("/")}
         onRetry={start}
@@ -170,6 +184,23 @@ export default function QuizPage() {
           don&apos;t pass. Once you start, your questions are drawn — so find a
           quiet moment.
         </p>
+
+        {info && (
+          <dl className="mt-5 flex items-stretch divide-x divide-border rounded-xl border border-border text-center">
+            <div className="flex-1 px-2 py-3">
+              <dt className="text-sm text-muted-foreground">Questions</dt>
+              <dd className="mt-1 text-2xl font-semibold tabular-nums text-ink-900">
+                {info.question_count}
+              </dd>
+            </div>
+            <div className="flex-1 px-2 py-3">
+              <dt className="text-sm text-muted-foreground">To pass</dt>
+              <dd className="mt-1 text-2xl font-semibold tabular-nums text-ink-900">
+                {info.pass_mark}%
+              </dd>
+            </div>
+          </dl>
+        )}
 
         {startError && (
           <Alert

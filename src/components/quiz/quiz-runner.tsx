@@ -13,10 +13,6 @@ import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
 import { QuestionStep } from "./question-step";
 
-function thresholdLabel(passMark: number, total: number): string {
-  return passMark <= total ? `${passMark} of ${total}` : `${passMark}%`;
-}
-
 interface QuizRunnerProps {
   quiz: QuizStart;
   onDone: (result: QuizResult) => void;
@@ -26,7 +22,6 @@ export function QuizRunner({ quiz, onDone }: QuizRunnerProps) {
   const questions = quiz.questions;
   const total = questions.length;
 
-  const [phase, setPhase] = useState<"intro" | "questions">("intro");
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -58,41 +53,8 @@ export function QuizRunner({ quiz, onDone }: QuizRunnerProps) {
     }
   }
 
-  if (phase === "intro") {
-    return (
-      <section className="fade-up">
-        <h1 className="font-sans text-xl font-semibold text-ink-900">
-          Certification quiz
-        </h1>
-        <div className="mt-6 rounded-2xl border border-border bg-surface p-5 shadow-card">
-          <dl className="flex items-stretch divide-x divide-border text-center">
-            <div className="flex-1 px-2">
-              <dt className="text-sm text-muted-foreground">Questions</dt>
-              <dd className="mt-1 text-2xl font-semibold tabular-nums text-ink-900">
-                {total}
-              </dd>
-            </div>
-            <div className="flex-1 px-2">
-              <dt className="text-sm text-muted-foreground">To pass</dt>
-              <dd className="mt-1 text-2xl font-semibold tabular-nums text-ink-900">
-                {thresholdLabel(quiz.pass_mark, total)}
-              </dd>
-            </div>
-          </dl>
-          <p className="mt-5 text-sm text-muted-foreground">
-            Answer every question. You can retake after a short break if you
-            don&apos;t pass.
-          </p>
-          <Button className="mt-5" fullWidth onClick={() => setPhase("questions")}>
-            Begin
-          </Button>
-        </div>
-      </section>
-    );
-  }
-
   return (
-    <section>
+    <section className="fade-up">
       <div className="mb-5">
         <div className="flex items-center justify-between gap-3">
           <button

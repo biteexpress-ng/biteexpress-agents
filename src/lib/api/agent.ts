@@ -1,6 +1,10 @@
 import { api } from "./client";
 import type {
   AgentProfile,
+  AssistedConfirmResponse,
+  CustomerList,
+  EarningsResponse,
+  QuizInfo,
   QuizResult,
   QuizStart,
   TrainingVideo,
@@ -57,4 +61,31 @@ export function submitQuiz(input: {
   answers: Record<number, number>;
 }): Promise<QuizResult> {
   return api("/quiz/submit", { method: "POST", body: input });
+}
+
+export function getQuizInfo(): Promise<QuizInfo> {
+  return api("/quiz/info");
+}
+
+export function getCustomers(page = 1): Promise<CustomerList> {
+  return api(`/customers?page=${page}`);
+}
+
+export function getEarnings(page = 1): Promise<EarningsResponse> {
+  return api(`/earnings?page=${page}`);
+}
+
+export function initiateAssistedSignup(input: {
+  phone: string;
+}): Promise<{ message?: string }> {
+  return api("/customers/assisted/initiate", { method: "POST", body: input });
+}
+
+export function confirmAssistedSignup(input: {
+  phone: string;
+  otp: string;
+  first_name: string;
+  last_name: string;
+}): Promise<AssistedConfirmResponse> {
+  return api("/customers/assisted/confirm", { method: "POST", body: input });
 }

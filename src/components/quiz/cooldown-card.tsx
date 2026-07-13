@@ -1,29 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { Clock } from "lucide-react";
 import { buttonClassName, Button } from "@/components/ui/button";
-
-function useNow(active: boolean): number {
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    if (!active) return;
-    const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
-  }, [active]);
-  return now;
-}
-
-function formatRemaining(ms: number): string {
-  const total = Math.ceil(ms / 1000);
-  const h = Math.floor(total / 3600);
-  const m = Math.floor((total % 3600) / 60);
-  const s = total % 60;
-  const mm = String(m).padStart(2, "0");
-  const ss = String(s).padStart(2, "0");
-  return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
-}
+import { formatRemaining, useCountdown } from "@/lib/hooks/use-countdown";
 
 interface CooldownCardProps {
   retryAt: string;
@@ -36,11 +16,7 @@ interface CooldownCardProps {
  * retry_at; once it reaches zero the "Start quiz" action unlocks.
  */
 export function CooldownCard({ retryAt, onRetry, retrying }: CooldownCardProps) {
-  const target = new Date(retryAt).getTime();
-  const valid = Number.isFinite(target);
-  const now = useNow(valid);
-  const remaining = valid ? Math.max(0, target - now) : 0;
-  const ready = !valid || remaining <= 0;
+  const { remaining, expired: ready } = useCountdown(retryAt);
 
   return (
     <section className="fade-up">
