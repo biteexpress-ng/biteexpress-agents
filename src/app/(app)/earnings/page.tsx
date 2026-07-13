@@ -12,6 +12,7 @@ import { buttonClassName } from "@/components/ui/button";
 import { PaginatedList } from "@/components/ui/paginated-list";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BalanceHeader } from "@/components/earnings/balance-header";
+import { LockedBonusCard } from "@/components/earnings/locked-bonus-card";
 import { LedgerRow } from "@/components/earnings/ledger-row";
 
 export default function EarningsPage() {
@@ -27,6 +28,11 @@ export default function EarningsPage() {
           renderHeader={(first) => (
             <div className="mb-8">
               <BalanceHeader balances={first.balances} />
+              {first.locked_bonus && (
+                <div className="mt-5">
+                  <LockedBonusCard bonus={first.locked_bonus} />
+                </div>
+              )}
               <div className="mt-6">
                 <WithdrawCta eligibility={first.eligibility} />
               </div>

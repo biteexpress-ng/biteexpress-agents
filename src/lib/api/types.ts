@@ -98,12 +98,25 @@ export interface CustomerList {
 
 export interface LedgerEntry {
   id: number;
-  type: "order_commission" | "reversal" | "challenge_bonus" | "manual_bonus";
-  status: "confirmed" | "reversed";
+  type:
+    | "order_commission"
+    | "reversal"
+    | "challenge_bonus"
+    | "manual_bonus"
+    | "onboarding_bonus";
+  status: "confirmed" | "reversed" | "locked" | "expired";
   amount: number;
   order_id: number | null;
   note: string | null;
   created_at: string;
+}
+
+/** The locked onboarding welcome bonus, shown greyed-out until unlocked. */
+export interface LockedBonus {
+  amount: number;
+  message: string;
+  /** ISO-8601 UTC; when the bonus is voided if never unlocked. */
+  expires_at: string | null;
 }
 
 export type WithdrawReason =
@@ -119,7 +132,13 @@ export interface WithdrawEligibility {
 }
 
 export interface EarningsResponse {
-  balances: { withdrawable: number; pending: number; earned_total: number };
+  balances: {
+    withdrawable: number;
+    pending: number;
+    locked: number;
+    earned_total: number;
+  };
+  locked_bonus: LockedBonus | null;
   ledger: LedgerEntry[];
   eligibility: WithdrawEligibility;
   pagination: Pagination;
