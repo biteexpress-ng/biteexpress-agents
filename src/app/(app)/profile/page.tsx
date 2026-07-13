@@ -7,6 +7,7 @@ import { logout } from "@/lib/api/agent";
 import { useAuthStore } from "@/stores/auth";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { KycCard } from "@/components/kyc/kyc-card";
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
@@ -64,10 +65,8 @@ export default function ProfilePage() {
         </div>
       </dl>
 
-      <div className="mt-4 rounded-2xl border border-border bg-surface p-4 shadow-soft">
-        <p className="text-sm text-muted-foreground">
-          Payout details will be set up here before your first withdrawal.
-        </p>
+      <div className="mt-6">
+        <KycCard />
       </div>
 
       <Button
