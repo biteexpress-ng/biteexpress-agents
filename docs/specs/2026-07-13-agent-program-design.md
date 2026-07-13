@@ -77,9 +77,15 @@ config, not seeded rows.
 - **`agent_challenge_progress`** — per agent per week: week key, signups count,
   activations count, tier achieved (snapshot of tier config at award time),
   bonus credited flag.
-- **Withdrawals** reuse the existing `withdraw_requests` flow with a new
-  requester type so agent requests appear in the admin panel beside vendor/rider
-  requests.
+- **Withdrawals** — **decision (C gate prep, 2026-07-13):** a dedicated
+  `agent_withdraw_requests` table with its own admin screen in the Agent Program
+  cluster, NOT columns on the core `withdraw_requests` table. Rationale: the core
+  table is vendor/DM-scoped with a `ZoneScope` global scope (agents have no zone)
+  and BiteExpress precedent (BiteExpense) keeps custom modules off 6amTech core
+  tables. Admin workflow is identical to rider/vendor requests: pending queue →
+  approve/deny with note. `pending_balance` semantics: withdrawal-in-flight —
+  requesting moves the amount withdrawable→pending; deny moves it back; approve
+  clears it (paid out).
 
 ## 4. Agent lifecycle
 
