@@ -2,6 +2,7 @@ import { api } from "./client";
 import type {
   AgentProfile,
   AssistedConfirmResponse,
+  ChallengeStatus,
   CustomerList,
   EarningsResponse,
   KycStatusResponse,
@@ -111,4 +112,8 @@ export function requestWithdraw(input: {
 
 export function getWithdrawals(page = 1): Promise<WithdrawalsResponse> {
   return api(`/withdrawals?page=${page}`);
+}
+
+export function getChallenge(): Promise<ChallengeStatus> {
+  return api("/challenge");
 }

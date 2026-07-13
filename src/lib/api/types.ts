@@ -171,3 +171,46 @@ export interface WithdrawalsResponse {
   withdrawals: WithdrawalEntry[];
   pagination: Pagination;
 }
+
+/** One rung of the weekly challenge ladder. Ascending by signup_target. */
+export interface ChallengeTier {
+  name: string;
+  signup_target: number;
+  activation_target: number;
+  bonus_amount: number;
+  achieved: boolean;
+}
+
+/** This week's live progress. Counts are computed server-side from referrals. */
+export interface ChallengeCurrent {
+  week_key: string;
+  /** ISO-8601 UTC; render in the device's local time (Lagos for agents). */
+  week_ends_at: string;
+  signups: number;
+  activations: number;
+  tiers: ChallengeTier[];
+  /** Highest tier reached this week, or null. Paid Monday to the available balance. */
+  achieved_tier: string | null;
+}
+
+/** A past win. Newest-first, capped at 12 by the API. */
+export interface ChallengeAward {
+  week_key: string;
+  tier_name: string;
+  bonus_amount: number;
+  signups: number;
+  activations: number;
+  /** ISO-8601 UTC. */
+  awarded_at: string;
+}
+
+/**
+ * GET /challenge. `active` is false when the program/challenge flags are off or
+ * no tiers are configured; then `current` is null and `past_awards` is empty and
+ * the feature is hidden everywhere.
+ */
+export interface ChallengeStatus {
+  active: boolean;
+  current: ChallengeCurrent | null;
+  past_awards: ChallengeAward[];
+}

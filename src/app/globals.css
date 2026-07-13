@@ -429,6 +429,12 @@
     biteexpress-glow-pulse 900ms var(--ease-out-expo) 320ms both;
 }
 
+/* Challenge tier bars — fill via transform (compositor-only) so a screen full of
+   bars stays smooth on low-end Android. Origin-left grow, 200ms ease-out. */
+.tier-bar-fill {
+  transition: transform 200ms var(--ease-out-quart);
+}
+
 /* Forward slide for quiz step transitions. */
 @keyframes biteexpress-slide-in {
   from { opacity: 0; transform: translateX(16px); }
@@ -451,4 +457,7 @@
   .reveal-pass { animation: none; }
   .reveal-pass { opacity: 1; transform: none; }
   .card-luxe { transition: none; }
+  /* Bars snap to their value instead of animating; the printed fraction and the
+     fill are both already present, so nothing is lost. */
+  .tier-bar-fill { transition: none; }
 }
