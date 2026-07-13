@@ -9,6 +9,10 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 const TITLES: Record<string, string> = {
   "/": "Home",
+  "/customers": "Customers",
+  "/earnings": "Earnings",
+  "/withdraw": "Withdraw",
+  "/signup-customer": "Sign up a customer",
   "/training": "Training",
   "/quiz": "Quiz",
   "/profile": "Profile",
