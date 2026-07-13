@@ -187,6 +187,13 @@
     color: var(--color-ink-0);
   }
 
+  /* Native <dialog> backdrop — used by the logout confirm. */
+  dialog::backdrop {
+    background: rgba(13, 13, 15, 0.45);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+  }
+
   :focus-visible {
     outline: 2px solid var(--color-brand-red);
     outline-offset: 2px;
