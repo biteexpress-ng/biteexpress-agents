@@ -104,13 +104,14 @@ export function ImageField({
         aria-invalid={!!error}
         aria-describedby={error ? `${id}-error` : undefined}
       />
-      <label
-        htmlFor={id}
-        className="inline-flex min-h-12 w-fit cursor-pointer items-center gap-2 rounded-xl border border-border-strong bg-surface px-4 text-base font-medium text-ink-900 transition-colors hover:bg-canvas-sunken focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand-red"
+      <button
+        type="button"
+        onClick={() => inputRef.current?.click()}
+        className="inline-flex min-h-12 w-fit cursor-pointer items-center gap-2 rounded-xl border border-border-strong bg-surface px-4 text-base font-medium text-ink-900 transition-colors hover:bg-canvas-sunken focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-red"
       >
         <Camera className="size-5" aria-hidden />
         {shown ? "Replace photo" : "Choose photo"}
-      </label>
+      </button>
 
       {error && (
         <p id={`${id}-error`} role="alert" className="text-sm font-medium text-error">

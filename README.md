@@ -10,11 +10,12 @@ zustand, and react-hook-form + zod. The visual system is ported from
 `biteexpress-web-app` (see `DESIGN.md`) so this app is recognizably part of the
 `bite.express` / `app.bite.express` family.
 
-**Scope shipped (Phase A2 + B2):** login, password setup, training,
+**Scope shipped (Phase A2 + B2 + C2):** login, password setup, training,
 certification quiz, certified home (referral code + live balance/customer
-numbers), **customers** (`/customers`), **earnings** (`/earnings`),
-**assisted signup** (`/signup-customer`), and profile. Withdrawals and KYC are
-Phase C; challenges and notifications are Phase D.
+numbers), **customers** (`/customers`), **earnings** (`/earnings` with the
+eligibility-aware withdraw CTA), **assisted signup** (`/signup-customer`),
+**KYC** (status-driven, on `/profile`), and **withdrawals** (`/withdraw` +
+payout history). Challenges and notifications are Phase D.
 
 ## Requirements
 
@@ -66,7 +67,8 @@ src/
   app/
     (auth)/          login, setup-password (unguarded, no bottom nav)
     (app)/           home, training, quiz, customers, earnings,
-                     signup-customer, profile (auth-guarded, gated)
+                     withdraw, signup-customer, profile (KYC lives here),
+                     (auth-guarded, gated)
     layout.tsx       fonts, metadata, favicon
     globals.css      ported @theme tokens + brand utilities
     manifest.ts      PWA manifest
