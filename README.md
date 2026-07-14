@@ -10,14 +10,19 @@ zustand, and react-hook-form + zod. The visual system is ported from
 `biteexpress-web-app` (see `DESIGN.md`) so this app is recognizably part of the
 `bite.express` / `app.bite.express` family.
 
-**Scope shipped (Phase A2 + B2 + C2 + D2):** login, password setup, training,
+**Scope shipped (Phase A2 + B2 + C2 + D2 + E1):** login, password setup, training,
 certification quiz, certified home (referral code + live balance/customer
 numbers + weekly-challenge strip), **customers** (`/customers`, with this
 week's signup count when a challenge is active), **earnings** (`/earnings` with
 the eligibility-aware withdraw CTA), **assisted signup** (`/signup-customer`),
 **KYC** (status-driven, on `/profile`), **withdrawals** (`/withdraw` + payout
-history), and **weekly challenges** (`/challenges`: live tier progress, the
-bonus on the line, the informational week deadline, and past wins). The
+history), **weekly challenges** (`/challenges`: live tier progress, the
+bonus on the line, the informational week deadline, and past wins), and the
+**marketing kit** (`/promote`: a client-rendered A5 QR poster and WhatsApp
+status image built from the agent's own code, plus six ready-to-send message
+templates). The marketing kit is pure client-side (canvas + the `qrcode`
+package, no backend calls); a null `referral_code` shows a calm locked state
+pointing to `/quiz`. The
 challenge feature is driven entirely by `GET /challenge`; when it returns
 `active: false` the strip and the `/challenges` route disappear (deep links
 redirect home). Notifications are a later phase.
