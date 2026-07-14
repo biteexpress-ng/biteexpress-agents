@@ -4,10 +4,7 @@ import { useState } from "react";
 import { Check, Copy, Share2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/brand/logo";
-
-function inviteText(code: string): string {
-  return `I'm inviting you to BiteExpress — order food, groceries and more, delivered fast. Use my code ${code} when you sign up: https://bite.express`;
-}
+import { inviteText } from "@/lib/marketing/templates";
 
 interface ReferralCodeCardProps {
   code: string;
