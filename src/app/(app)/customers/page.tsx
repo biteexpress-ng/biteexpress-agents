@@ -89,6 +89,16 @@ export default function CustomersPage() {
               >
                 Share your code
               </Link>
+              <Link
+                href="/promote"
+                className={buttonClassName({
+                  variant: "ghost",
+                  fullWidth: true,
+                  className: "mt-2",
+                })}
+              >
+                Open your marketing kit
+              </Link>
             </div>
           )}
           skeleton={<CustomerRowSkeleton />}

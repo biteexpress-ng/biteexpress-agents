@@ -16,6 +16,7 @@ const TITLES: Record<string, string> = {
   "/training": "Training",
   "/quiz": "Quiz",
   "/profile": "Profile",
+  "/promote": "Marketing kit",
 };
 
 export function AppHeader() {

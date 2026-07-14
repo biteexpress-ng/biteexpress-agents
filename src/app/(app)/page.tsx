@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronRight, Wallet } from "lucide-react";
+import { ChevronRight, Megaphone, Wallet } from "lucide-react";
 import { getCustomers, getEarnings } from "@/lib/api/agent";
 import { useAuthStore } from "@/stores/auth";
 import { formatNaira } from "@/lib/format";
@@ -30,7 +30,24 @@ export default function HomePage() {
       </h1>
 
       {agent?.referral_code ? (
-        <ReferralCodeCard code={agent.referral_code} className="mt-6" />
+        <>
+          <ReferralCodeCard code={agent.referral_code} className="mt-6" />
+          <Link
+            href="/promote"
+            className="mt-3 flex items-center gap-3 rounded-2xl border border-border bg-surface p-5 shadow-soft transition-colors hover:bg-canvas-sunken/50"
+          >
+            <span className="grid size-10 shrink-0 place-items-center rounded-full bg-brand-red/10 text-brand-red">
+              <Megaphone className="size-5" aria-hidden />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-base font-medium text-ink-900">Promote</p>
+              <p className="mt-0.5 text-sm text-muted-foreground">
+                Posters and messages, ready to share.
+              </p>
+            </div>
+            <ChevronRight className="size-5 shrink-0 text-ink-400" aria-hidden />
+          </Link>
+        </>
       ) : (
         <div className="mt-6 rounded-2xl border border-border bg-surface p-5 shadow-card">
           <p className="text-base text-ink-800">
