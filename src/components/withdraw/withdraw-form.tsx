@@ -10,11 +10,14 @@ import { formatNaira } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert } from "@/components/ui/alert";
+import { FastTrackBadge } from "./withdrawal-row";
 
 interface WithdrawFormProps {
   available: number;
   min: number;
   bank: KycStatusResponse["bank"];
+  /** Advertised payout SLA in hours; absent or 0 renders no promise. */
+  slaHours?: number;
   onSubmitted: () => void;
 }
 
@@ -22,11 +25,13 @@ export function WithdrawForm({
   available,
   min,
   bank,
+  slaHours,
   onSubmitted,
 }: WithdrawFormProps) {
   const [phase, setPhase] = useState<"form" | "confirm" | "success">("form");
   const [amountStr, setAmountStr] = useState("");
   const [amount, setAmount] = useState(0);
+  const [express, setExpress] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -57,7 +62,8 @@ export function WithdrawForm({
     setSubmitting(true);
     setError(null);
     try {
-      await requestWithdraw({ amount });
+      const res = await requestWithdraw({ amount });
+      setExpress(!!res.request.express);
       setPhase("success");
     } catch (err) {
       if (err instanceof ApiRequestError) {
@@ -92,6 +98,14 @@ export function WithdrawForm({
           </span>{" "}
           to your account.
         </p>
+        {express && (
+          <div className="mt-4">
+            <FastTrackBadge />
+            <p className="mx-auto mt-1.5 max-w-xs text-sm text-muted-foreground">
+              Verified agents with a clean payout record are processed first.
+            </p>
+          </div>
+        )}
         <Button className="mt-6" fullWidth onClick={onSubmitted}>
           Done
         </Button>
@@ -185,7 +199,16 @@ export function WithdrawForm({
         </Alert>
       )}
 
-      <Button type="submit" fullWidth className="mt-5">
+      {slaHours != null && slaHours > 0 && (
+        <p className="mt-5 text-sm text-muted-foreground">
+          Withdrawals are usually paid within {slaHours} hours.
+        </p>
+      )}
+      <Button
+        type="submit"
+        fullWidth
+        className={slaHours != null && slaHours > 0 ? "mt-3" : "mt-5"}
+      >
         Continue
       </Button>
     </form>

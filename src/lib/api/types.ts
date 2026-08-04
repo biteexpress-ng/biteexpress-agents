@@ -129,6 +129,8 @@ export interface WithdrawEligibility {
   min_amount: number;
   kyc_status: KycStatus;
   reason: WithdrawReason | null;
+  /** Advertised payout SLA in hours. Absent or 0 = don't promise anything. */
+  payout_sla_hours?: number;
 }
 
 export interface EarningsResponse {
@@ -186,6 +188,8 @@ export interface WithdrawRequestResult {
   id: number;
   amount: number;
   status: "pending";
+  /** True when this request qualifies for the express payout lane. */
+  express?: boolean;
   created_at: string;
 }
 
@@ -193,6 +197,8 @@ export interface WithdrawalEntry {
   id: number;
   amount: number;
   status: "pending" | "approved" | "denied";
+  /** Only ever true on a still-pending request in the express lane. */
+  express?: boolean;
   admin_note: string | null;
   created_at: string;
   processed_at: string | null;

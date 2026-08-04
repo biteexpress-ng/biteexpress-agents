@@ -1,6 +1,25 @@
+import { Zap } from "lucide-react";
 import type { WithdrawalEntry } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
 import { formatDate, formatNaira } from "@/lib/format";
+
+/**
+ * Quiet marker for the express payout lane. Ink on a sunken chip on purpose:
+ * this is money UI, the badge informs rather than celebrates.
+ */
+export function FastTrackBadge({ className }: { className?: string }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 rounded-full bg-canvas-sunken px-2.5 py-1 text-xs font-medium text-ink-700",
+        className,
+      )}
+    >
+      <Zap className="size-3.5" aria-hidden />
+      Fast track
+    </span>
+  );
+}
 
 const STATUS_META: Record<
   WithdrawalEntry["status"],
@@ -27,9 +46,10 @@ export function WithdrawalRow({ withdrawal }: { withdrawal: WithdrawalEntry }) {
     <div className="rounded-2xl border border-border bg-surface p-4 shadow-soft">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          {/* Money stays ink — never colored; the chip carries the status. */}
-          <p className="text-base font-semibold tabular-nums text-ink-900">
+          {/* Money stays ink, never colored; the chip carries the status. */}
+          <p className="flex flex-wrap items-center gap-2 text-base font-semibold tabular-nums text-ink-900">
             {formatNaira(withdrawal.amount)}
+            {withdrawal.express && <FastTrackBadge />}
           </p>
           <p className="mt-0.5 text-sm text-muted-foreground">
             Requested {formatDate(withdrawal.created_at)}

@@ -85,6 +85,7 @@ export default function WithdrawPage() {
                 available={earnings.balances.withdrawable}
                 min={earnings.eligibility.min_amount}
                 bank={kyc.bank}
+                slaHours={earnings.eligibility.payout_sla_hours}
                 onSubmitted={onSubmitted}
               />
             ) : (
