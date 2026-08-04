@@ -25,7 +25,22 @@ package, no backend calls); a null `referral_code` shows a calm locked state
 pointing to `/quiz`. The
 challenge feature is driven entirely by `GET /challenge`; when it returns
 `active: false` the strip and the `/challenges` route disappear (deep links
-redirect home). Notifications are a later phase.
+redirect home).
+
+Phase F2 adds the **trust engine UI**: web push earning notifications (soft
+opt-in card on home, on/off toggle on the profile; the service worker at
+`public/agent-sw.js` handles `push` and `notificationclick` only, no fetch
+handler and no caching, and must stay that way), bank account **name
+resolution** in the KYC form (searchable bank select fed by `GET /banks`,
+debounced `POST /kyc/resolve-account` on 10 digits; an empty bank list or a
+failed resolve degrades to the free-text path), the **payout SLA line** and
+**Fast track badge** on the withdraw screen, and the **what-if earnings
+projector** on `/earnings` (three data modes driven by the `projection`
+object; every number reads as an estimate and nothing is ever invented
+client-side). Push is server-gated by `agent_push_enabled`; the whole opt-in
+surface hides itself while the flag is off. On iOS the opt-in card explains
+home-screen installation instead of prompting (iOS 16.4+ requires the
+installed PWA for push).
 
 ## Requirements
 
