@@ -133,6 +133,18 @@ export interface WithdrawEligibility {
   payout_sla_hours?: number;
 }
 
+/**
+ * Inputs for the what-if projector. `illustrative_avg_monthly_per_active` is 0
+ * until finance sets it, which means: hide the illustrative mode, never invent
+ * a number.
+ */
+export interface EarningsProjection {
+  window_days: number;
+  order_commission_30d: number;
+  active_customers: number;
+  illustrative_avg_monthly_per_active: number;
+}
+
 export interface EarningsResponse {
   balances: {
     withdrawable: number;
@@ -143,6 +155,8 @@ export interface EarningsResponse {
   locked_bonus: LockedBonus | null;
   ledger: LedgerEntry[];
   eligibility: WithdrawEligibility;
+  /** Absent on an older backend; the projector simply doesn't render. */
+  projection?: EarningsProjection;
   pagination: Pagination;
 }
 

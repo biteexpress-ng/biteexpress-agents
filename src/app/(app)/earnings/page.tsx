@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { BalanceHeader } from "@/components/earnings/balance-header";
 import { LockedBonusCard } from "@/components/earnings/locked-bonus-card";
 import { LedgerRow } from "@/components/earnings/ledger-row";
+import { ProjectorCard } from "@/components/earnings/projector-card";
 
 export default function EarningsPage() {
   return (
@@ -36,6 +37,11 @@ export default function EarningsPage() {
               <div className="mt-6">
                 <WithdrawCta eligibility={first.eligibility} />
               </div>
+              {first.projection && (
+                <div className="mt-6">
+                  <ProjectorCard projection={first.projection} />
+                </div>
+              )}
             </div>
           )}
           renderItem={(entry) => <LedgerRow entry={entry} />}
