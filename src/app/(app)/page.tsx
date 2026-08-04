@@ -70,6 +70,8 @@ function HomeNumbers() {
   const [pending, setPending] = useState(0);
   const [kycStatus, setKycStatus] = useState<string>("incomplete");
   const [customerCount, setCustomerCount] = useState(0);
+  // G1: how many customers need a visit. Absent on an older backend → 0 → no chip.
+  const [attentionCount, setAttentionCount] = useState(0);
 
   useEffect(() => {
     let active = true;
@@ -80,6 +82,7 @@ function HomeNumbers() {
         setPending(earnings.balances.pending);
         setKycStatus(earnings.eligibility.kyc_status);
         setCustomerCount(customers.stats.total);
+        setAttentionCount(customers.stats.attention_count ?? 0);
         setState("ready");
       })
       .catch(() => {
@@ -116,6 +119,11 @@ function HomeNumbers() {
         label="Customers"
         loading={state === "loading"}
         value={String(customerCount)}
+        valueSuffix={
+          ready && attentionCount > 0
+            ? `· ${attentionCount} need a visit`
+            : undefined
+        }
         hint={
           ready && customerCount === 0
             ? "Sign up your first one, or share your code."
@@ -150,12 +158,15 @@ function NumberCard({
   label,
   loading,
   value,
+  valueSuffix,
   hint,
 }: {
   href: string;
   label: string;
   loading: boolean;
   value: string;
+  /** Quiet inline annotation after the number, e.g. "· 2 need a visit". */
+  valueSuffix?: string;
   hint?: string;
 }) {
   return (
@@ -170,6 +181,11 @@ function NumberCard({
         ) : (
           <p className="mt-1 text-2xl font-semibold tabular-nums text-ink-900">
             {value}
+            {valueSuffix && (
+              <span className="ml-1.5 text-sm font-normal text-ink-600">
+                {valueSuffix}
+              </span>
+            )}
           </p>
         )}
         {hint && <p className="mt-1 text-sm text-muted-foreground">{hint}</p>}
