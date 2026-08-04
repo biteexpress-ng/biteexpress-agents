@@ -79,6 +79,9 @@ export interface Pagination {
   total: number;
 }
 
+/** Why a customer is on the needs-a-visit list. Null = doing fine. */
+export type CustomerAttention = "never_ordered" | "quiet";
+
 export interface ReferredCustomer {
   id: number;
   name_masked: string;
@@ -88,11 +91,16 @@ export interface ReferredCustomer {
   first_order_at: string | null;
   orders_count: number;
   commission_total: number;
+  /** G1 fields; all optional so an older backend payload still parses and the
+   *  attention UI simply doesn't render. */
+  last_order_at?: string | null;
+  contacted_at?: string | null;
+  attention?: CustomerAttention | null;
 }
 
 export interface CustomerList {
   customers: ReferredCustomer[];
-  stats: { total: number; activated: number };
+  stats: { total: number; activated: number; attention_count?: number };
   pagination: Pagination;
 }
 

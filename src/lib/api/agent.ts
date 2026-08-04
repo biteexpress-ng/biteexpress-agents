@@ -12,6 +12,7 @@ import type {
   ResolveAccountResponse,
   QuizResult,
   QuizStart,
+  ReferredCustomer,
   TrainingVideo,
   WithdrawalsResponse,
   WithdrawRequestResult,
@@ -80,8 +81,17 @@ export function getQuizInfo(): Promise<QuizInfo> {
   return api("/quiz/info");
 }
 
-export function getCustomers(page = 1): Promise<CustomerList> {
-  return api(`/customers?page=${page}`);
+export function getCustomers(
+  page = 1,
+  filter?: "attention",
+): Promise<CustomerList> {
+  return api(`/customers?page=${page}${filter ? `&filter=${filter}` : ""}`);
+}
+
+export function markCustomerContacted(
+  referralId: number,
+): Promise<ReferredCustomer> {
+  return api(`/customers/${referralId}/contacted`, { method: "POST" });
 }
 
 export function getEarnings(page = 1): Promise<EarningsResponse> {

@@ -9,6 +9,7 @@ import { buttonClassName } from "@/components/ui/button";
 import { PaginatedList } from "@/components/ui/paginated-list";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CustomerRow } from "@/components/customers/customer-row";
+import { AttentionSection } from "@/components/customers/attention-section";
 
 export default function CustomersPage() {
   // When the challenge is active, surface this week's signup count next to the
@@ -42,6 +43,10 @@ export default function CustomersPage() {
         <UserPlus className="size-5" aria-hidden />
         Sign up a customer
       </Link>
+
+      {/* The worklist: who to visit before scrolling the full book. Absent
+          entirely when nobody needs a visit or the backend predates it. */}
+      <AttentionSection className="mt-6" />
 
       <div className="mt-6">
         <PaginatedList<ReferredCustomer, CustomerList>
