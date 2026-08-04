@@ -7,6 +7,7 @@ import { getCustomers, getEarnings } from "@/lib/api/agent";
 import { useAuthStore } from "@/stores/auth";
 import { formatNaira } from "@/lib/format";
 import { ReferralCodeCard } from "@/components/home/referral-code-card";
+import { NotificationsCard } from "@/components/home/notifications-card";
 import { ChallengeStrip } from "@/components/challenges/challenge-strip";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -47,6 +48,7 @@ export default function HomePage() {
             </div>
             <ChevronRight className="size-5 shrink-0 text-ink-400" aria-hidden />
           </Link>
+          <NotificationsCard className="mt-3" />
         </>
       ) : (
         <div className="mt-6 rounded-2xl border border-border bg-surface p-5 shadow-card">

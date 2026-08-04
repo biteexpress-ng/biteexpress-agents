@@ -6,6 +6,7 @@ import type {
   CustomerList,
   EarningsResponse,
   KycStatusResponse,
+  PushConfig,
   QuizInfo,
   QuizResult,
   QuizStart,
@@ -122,4 +123,23 @@ export function getWithdrawals(page = 1): Promise<WithdrawalsResponse> {
 
 export function getChallenge(): Promise<ChallengeStatus> {
   return api("/challenge");
+}
+
+export function getPushConfig(): Promise<PushConfig> {
+  return api("/push/config");
+}
+
+export function subscribePush(input: {
+  endpoint: string;
+  p256dh: string;
+  auth: string;
+  user_agent?: string;
+}): Promise<{ message?: string }> {
+  return api("/push/subscribe", { method: "POST", body: input });
+}
+
+export function unsubscribePush(input: {
+  endpoint: string;
+}): Promise<{ message?: string }> {
+  return api("/push/subscribe", { method: "DELETE", body: input });
 }

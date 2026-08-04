@@ -8,6 +8,7 @@ import { useAuthStore } from "@/stores/auth";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { KycCard } from "@/components/kyc/kyc-card";
+import { NotificationsRow } from "@/components/home/notifications-card";
 import type { KycStatus } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
 
@@ -93,6 +94,10 @@ export default function ProfilePage() {
           </dd>
         </div>
       </dl>
+
+      <div className="mt-4">
+        <NotificationsRow />
+      </div>
 
       <div className="mt-6">
         <KycCard onStatus={setKycStatus} />

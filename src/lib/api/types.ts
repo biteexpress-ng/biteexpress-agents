@@ -191,6 +191,12 @@ export interface WithdrawalsResponse {
   pagination: Pagination;
 }
 
+/** GET /push/config. `public_key` is the VAPID public key (base64url). */
+export interface PushConfig {
+  enabled: boolean;
+  public_key: string | null;
+}
+
 /** One rung of the weekly challenge ladder. Ascending by signup_target. */
 export interface ChallengeTier {
   name: string;
