@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Check, TriangleAlert } from "lucide-react";
-import { submitKyc } from "@/lib/api/agent";
-import { ApiRequestError, type IdentityType } from "@/lib/api/types";
+import { Check, Loader2, TriangleAlert } from "lucide-react";
+import { getBanks, resolveBankAccount, submitKyc } from "@/lib/api/agent";
+import { ApiRequestError, type Bank, type IdentityType } from "@/lib/api/types";
 import { gateMessage } from "@/lib/api/messages";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Alert } from "@/components/ui/alert";
 import { ImageField } from "./image-field";
+import { BankSelect } from "./bank-select";
 
 export const ID_TYPES: { value: IdentityType; label: string }[] = [
   { value: "nin", label: "National ID (NIN)" },
@@ -31,12 +32,20 @@ const schema = z.object({
     message: "Choose an ID type",
   }),
   bank_name: z.string().trim().min(1, "Enter your bank name"),
+  /** Paystack bank code, attached when a bank is picked from the list. */
+  bank_code: z.string().optional(),
   bank_account_number: z
     .string()
     .regex(/^\d{10}$/, "Enter your 10-digit account number"),
   bank_account_name: z.string().trim().min(1, "Enter the account name"),
 });
 type FormValues = z.infer<typeof schema>;
+
+type Resolution =
+  | { state: "idle" }
+  | { state: "checking" }
+  | { state: "resolved"; name: string }
+  | { state: "failed" };
 
 interface KycFormProps {
   defaults?: { bank_name?: string; bank_account_name?: string };
@@ -48,12 +57,14 @@ export function KycForm({ defaults, onSubmitted }: KycFormProps) {
     register,
     handleSubmit,
     setError,
+    setValue,
     watch,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
       bank_name: defaults?.bank_name ?? "",
+      bank_code: "",
       bank_account_number: "",
       bank_account_name: defaults?.bank_account_name ?? "",
     },
@@ -65,7 +76,59 @@ export function KycForm({ defaults, onSubmitted }: KycFormProps) {
   const [idError, setIdError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
 
+  // null = still loading; [] = list unavailable, fall back to free text.
+  const [banks, setBanks] = useState<Bank[] | null>(null);
+  const [resolution, setResolution] = useState<Resolution>({ state: "idle" });
+
+  useEffect(() => {
+    let active = true;
+    getBanks()
+      .then((res) => active && setBanks(res.banks))
+      .catch(() => active && setBanks([]));
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const selectedType = watch("identity_type");
+  const bankName = watch("bank_name");
+  const bankCode = watch("bank_code");
+  const accountNumber = watch("bank_account_number");
+
+  // Debounced name lookup: fires once we have a picked bank and 10 digits,
+  // and any edit to either input discards the in-flight result.
+  useEffect(() => {
+    setResolution({ state: "idle" });
+    if (!bankCode || !/^\d{10}$/.test(accountNumber)) return;
+
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      if (cancelled) return;
+      setResolution({ state: "checking" });
+      try {
+        const res = await resolveBankAccount({
+          bank_code: bankCode,
+          bank_account_number: accountNumber,
+        });
+        if (cancelled) return;
+        if (res.resolved && res.account_name) {
+          setResolution({ state: "resolved", name: res.account_name });
+          setValue("bank_account_name", res.account_name, {
+            shouldValidate: true,
+          });
+        } else {
+          setResolution({ state: "failed" });
+        }
+      } catch {
+        if (!cancelled) setResolution({ state: "failed" });
+      }
+    }, 600);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [bankCode, accountNumber, setValue]);
 
   async function onSubmit(values: FormValues) {
     setFormError(null);
@@ -85,6 +148,7 @@ export function KycForm({ defaults, onSubmitted }: KycFormProps) {
     fd.append("identity_type", values.identity_type);
     fd.append("identity_image", idImage);
     fd.append("bank_name", values.bank_name);
+    if (values.bank_code) fd.append("bank_code", values.bank_code);
     fd.append("bank_account_number", values.bank_account_number);
     fd.append("bank_account_name", values.bank_account_name);
 
@@ -198,44 +262,95 @@ export function KycForm({ defaults, onSubmitted }: KycFormProps) {
         error={idError ?? undefined}
       />
 
-      <Field label="Bank name" htmlFor="bank_name" error={errors.bank_name?.message}>
-        <Input
-          id="bank_name"
-          autoComplete="off"
-          aria-invalid={!!errors.bank_name}
-          {...register("bank_name")}
-        />
-      </Field>
+      {banks && banks.length > 0 ? (
+        <Field label="Bank" htmlFor="bank_name" error={errors.bank_name?.message}>
+          <BankSelect
+            id="bank_name"
+            banks={banks}
+            value={bankName}
+            invalid={!!errors.bank_name}
+            onChange={(name, bank) => {
+              setValue("bank_name", name, {
+                shouldValidate: !!errors.bank_name,
+              });
+              setValue("bank_code", bank?.code ?? "");
+            }}
+          />
+        </Field>
+      ) : (
+        <Field
+          label="Bank name"
+          htmlFor="bank_name"
+          error={errors.bank_name?.message}
+        >
+          <Input
+            id="bank_name"
+            autoComplete="off"
+            aria-invalid={!!errors.bank_name}
+            {...register("bank_name")}
+          />
+        </Field>
+      )}
 
-      <Field
-        label="Account number"
-        htmlFor="bank_account_number"
-        error={errors.bank_account_number?.message}
-        hint="Your 10-digit account number."
-      >
-        <Input
-          id="bank_account_number"
-          inputMode="numeric"
-          autoComplete="off"
-          maxLength={10}
-          aria-invalid={!!errors.bank_account_number}
-          {...register("bank_account_number")}
-        />
-      </Field>
+      <div>
+        <Field
+          label="Account number"
+          htmlFor="bank_account_number"
+          error={errors.bank_account_number?.message}
+          hint="Your 10-digit account number."
+        >
+          <Input
+            id="bank_account_number"
+            inputMode="numeric"
+            autoComplete="off"
+            maxLength={10}
+            aria-invalid={!!errors.bank_account_number}
+            {...register("bank_account_number")}
+          />
+        </Field>
+        {/* Reserved line: the lookup status appears here without moving the form. */}
+        {!!bankCode && (
+          <p
+            role="status"
+            className="mt-1.5 flex min-h-5 items-center gap-1.5 text-sm text-muted-foreground"
+          >
+            {resolution.state === "checking" && (
+              <>
+                <Loader2 className="size-4 animate-spin" aria-hidden />
+                Checking the account name&hellip;
+              </>
+            )}
+            {resolution.state === "failed" &&
+              "We could not confirm this account name, check the number carefully."}
+          </p>
+        )}
+      </div>
 
-      <Field
-        label="Account name"
-        htmlFor="bank_account_name"
-        error={errors.bank_account_name?.message}
-        hint="Exactly as your bank knows you."
-      >
-        <Input
-          id="bank_account_name"
-          autoComplete="off"
-          aria-invalid={!!errors.bank_account_name}
-          {...register("bank_account_name")}
-        />
-      </Field>
+      {resolution.state === "resolved" ? (
+        <div className="rounded-xl border border-success/25 bg-success-soft px-4 py-3.5">
+          <p className="text-sm text-[color:var(--color-success-strong)]">
+            Paying
+          </p>
+          <p className="mt-0.5 text-base font-semibold text-ink-900">
+            {resolution.name}
+          </p>
+          <p className="mt-1 text-sm text-ink-800">Make sure this is you.</p>
+        </div>
+      ) : (
+        <Field
+          label="Account name"
+          htmlFor="bank_account_name"
+          error={errors.bank_account_name?.message}
+          hint="Exactly as your bank knows you."
+        >
+          <Input
+            id="bank_account_name"
+            autoComplete="off"
+            aria-invalid={!!errors.bank_account_name}
+            {...register("bank_account_name")}
+          />
+        </Field>
+      )}
 
       <Button type="submit" fullWidth loading={isSubmitting}>
         Submit for review

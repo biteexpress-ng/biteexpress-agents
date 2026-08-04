@@ -151,6 +151,18 @@ export interface AssistedConfirmResponse {
 
 export type KycStatus = "incomplete" | "pending" | "verified" | "rejected";
 
+/** One entry of GET /banks. An empty list means resolution is unavailable. */
+export interface Bank {
+  name: string;
+  code: string;
+}
+
+/** POST /kyc/resolve-account. `account_name` null = could not confirm. */
+export interface ResolveAccountResponse {
+  resolved: boolean;
+  account_name: string | null;
+}
+
 export type IdentityType =
   | "nin"
   | "drivers_license"

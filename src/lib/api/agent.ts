@@ -2,12 +2,14 @@ import { api } from "./client";
 import type {
   AgentProfile,
   AssistedConfirmResponse,
+  Bank,
   ChallengeStatus,
   CustomerList,
   EarningsResponse,
   KycStatusResponse,
   PushConfig,
   QuizInfo,
+  ResolveAccountResponse,
   QuizResult,
   QuizStart,
   TrainingVideo,
@@ -103,6 +105,17 @@ export function confirmAssistedSignup(input: {
 
 export function getKyc(): Promise<KycStatusResponse> {
   return api("/kyc");
+}
+
+export function getBanks(): Promise<{ banks: Bank[] }> {
+  return api("/banks");
+}
+
+export function resolveBankAccount(input: {
+  bank_code: string;
+  bank_account_number: string;
+}): Promise<ResolveAccountResponse> {
+  return api("/kyc/resolve-account", { method: "POST", body: input });
 }
 
 export function submitKyc(
