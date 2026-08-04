@@ -199,7 +199,6 @@ export function KycForm({ defaults, onSubmitted }: KycFormProps) {
         id="kyc-photo"
         label="Your photo"
         hint="A clear photo of your face."
-        capture="user"
         value={photo}
         onChange={setPhoto}
         onError={setPhotoError}
@@ -255,7 +254,6 @@ export function KycForm({ defaults, onSubmitted }: KycFormProps) {
         id="kyc-id-image"
         label="Photo of your ID"
         hint="Make sure the details are readable."
-        capture="environment"
         value={idImage}
         onChange={setIdImage}
         onError={setIdError}

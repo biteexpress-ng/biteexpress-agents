@@ -9,8 +9,6 @@ interface ImageFieldProps {
   id: string;
   label: string;
   hint?: string;
-  /** Camera hint for mobile: "user" (selfie/passport) or "environment" (ID doc). */
-  capture?: "user" | "environment";
   value: File | null;
   onChange: (file: File | null) => void;
   onError: (message: string | null) => void;
@@ -22,7 +20,6 @@ export function ImageField({
   id,
   label,
   hint,
-  capture,
   value,
   onChange,
   onError,
@@ -97,8 +94,9 @@ export function ImageField({
         ref={inputRef}
         id={id}
         type="file"
+        // No `capture` attribute on purpose: it forces straight-to-camera on
+        // phones. Bare accept lets the OS offer camera, gallery, and files.
         accept="image/*"
-        capture={capture}
         onChange={pick}
         className="sr-only"
         aria-invalid={!!error}
