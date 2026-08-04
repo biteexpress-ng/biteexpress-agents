@@ -144,10 +144,9 @@ export function getPushConfig(): Promise<PushConfig> {
 
 export function subscribePush(input: {
   endpoint: string;
-  p256dh: string;
-  auth: string;
+  keys: { p256dh: string; auth: string };
   user_agent?: string;
-}): Promise<{ message?: string }> {
+}): Promise<{ subscribed: boolean }> {
   return api("/push/subscribe", { method: "POST", body: input });
 }
 

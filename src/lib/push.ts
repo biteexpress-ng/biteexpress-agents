@@ -104,8 +104,7 @@ export async function enablePush(): Promise<NotificationPermission> {
 
   await subscribePush({
     endpoint: json.endpoint,
-    p256dh: json.keys.p256dh,
-    auth: json.keys.auth,
+    keys: { p256dh: json.keys.p256dh, auth: json.keys.auth },
     user_agent: navigator.userAgent,
   });
 
