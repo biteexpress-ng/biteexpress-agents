@@ -4,14 +4,14 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Check, Loader2, TriangleAlert } from "lucide-react";
+import { Loader2, TriangleAlert } from "lucide-react";
 import { getBanks, resolveBankAccount, submitKyc } from "@/lib/api/agent";
 import { ApiRequestError, type Bank, type IdentityType } from "@/lib/api/types";
 import { gateMessage } from "@/lib/api/messages";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { Alert } from "@/components/ui/alert";
 import { ImageField } from "./image-field";
 import { BankSelect } from "./bank-select";
@@ -205,50 +205,28 @@ export function KycForm({ defaults, onSubmitted }: KycFormProps) {
         error={photoError ?? undefined}
       />
 
-      <fieldset>
-        <legend className="text-sm font-medium text-ink-800">ID type</legend>
-        <div className="mt-2 grid grid-cols-1 gap-2">
-          {ID_TYPES.map((opt) => {
-            const active = selectedType === opt.value;
-            return (
-              <label
-                key={opt.value}
-                className={cn(
-                  "flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border bg-surface px-4 py-3 text-base transition-colors",
-                  "has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brand-red",
-                  active
-                    ? "border-brand-red bg-[color-mix(in_srgb,var(--color-brand-red)_6%,#ffffff)] text-ink-900"
-                    : "border-border text-ink-800 hover:border-border-strong",
-                )}
-              >
-                <input
-                  type="radio"
-                  value={opt.value}
-                  className="sr-only"
-                  {...register("identity_type")}
-                />
-                <span className="flex-1">{opt.label}</span>
-                <span
-                  className={cn(
-                    "grid size-6 shrink-0 place-items-center rounded-full border transition-colors",
-                    active
-                      ? "border-brand-red bg-brand-red text-primary-foreground"
-                      : "border-border-strong",
-                  )}
-                  aria-hidden
-                >
-                  {active && <Check className="size-4" />}
-                </span>
-              </label>
-            );
-          })}
-        </div>
-        {errors.identity_type && (
-          <p role="alert" className="mt-1 text-sm font-medium text-error">
-            {errors.identity_type.message}
-          </p>
-        )}
-      </fieldset>
+      <Field
+        label="ID type"
+        htmlFor="identity_type"
+        error={errors.identity_type?.message}
+      >
+        <Select
+          id="identity_type"
+          defaultValue=""
+          aria-invalid={!!errors.identity_type}
+          className={selectedType ? undefined : "text-ink-500"}
+          {...register("identity_type")}
+        >
+          <option value="" disabled>
+            Choose an ID type
+          </option>
+          {ID_TYPES.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </Select>
+      </Field>
 
       <ImageField
         id="kyc-id-image"

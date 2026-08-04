@@ -115,17 +115,14 @@ export default function CustomersPage() {
 
 function CustomerRowSkeleton() {
   return (
-    <div className="rounded-2xl border border-border bg-surface p-4">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex-1">
-          <Skeleton className="h-4 w-1/3" />
-          <Skeleton className="mt-2 h-3 w-1/4" />
-        </div>
-        <Skeleton className="h-6 w-24 rounded-full" />
+    <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-surface px-4 py-3">
+      <div className="flex-1">
+        <Skeleton className="h-4 w-1/3" />
+        <Skeleton className="mt-2 h-3 w-1/2" />
       </div>
-      <div className="mt-3 flex items-center justify-between border-t border-border pt-3">
-        <Skeleton className="h-3 w-16" />
+      <div className="flex flex-col items-end">
         <Skeleton className="h-4 w-16" />
+        <Skeleton className="mt-2 h-3 w-12" />
       </div>
     </div>
   );

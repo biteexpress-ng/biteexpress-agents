@@ -8,37 +8,30 @@ export function CustomerRow({ customer }: { customer: ReferredCustomer }) {
     customer.signup_channel === "assisted" ? "You signed up" : "Used your code";
 
   return (
-    <div className="rounded-2xl border border-border bg-surface p-4 shadow-soft">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="truncate text-base font-medium text-ink-900">
-            {customer.name_masked}
-          </p>
-          <p className="mt-0.5 text-sm text-muted-foreground">
-            Joined {formatDate(customer.joined_at)}
-          </p>
-        </div>
-        <span className="shrink-0 rounded-full bg-canvas-sunken px-2.5 py-1 text-xs font-medium text-ink-600">
-          {channelLabel}
-        </span>
+    <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-surface px-4 py-3 shadow-soft">
+      <div className="min-w-0">
+        <p className="truncate text-base font-medium text-ink-900">
+          {customer.name_masked}
+        </p>
+        <p className="mt-0.5 truncate text-sm text-muted-foreground">
+          {formatDate(customer.joined_at)} · {channelLabel}
+        </p>
       </div>
 
-      <div className="mt-3 flex items-center justify-between border-t border-border pt-3">
+      <div className="shrink-0 text-right">
         {activated ? (
           <>
-            <span className="text-sm text-muted-foreground tabular-nums">
-              {customer.orders_count}{" "}
-              {customer.orders_count === 1 ? "order" : "orders"}
-            </span>
             <Amount
               value={customer.commission_total}
-              className="text-base font-semibold"
+              className="text-sm font-semibold"
             />
+            <p className="mt-0.5 text-sm text-muted-foreground tabular-nums">
+              {customer.orders_count}{" "}
+              {customer.orders_count === 1 ? "order" : "orders"}
+            </p>
           </>
         ) : (
-          <span className="text-sm text-ink-500">
-            No order yet — it counts when they order
-          </span>
+          <span className="text-sm text-ink-500">No order yet</span>
         )}
       </div>
     </div>
