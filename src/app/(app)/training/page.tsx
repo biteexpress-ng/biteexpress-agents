@@ -140,7 +140,24 @@ export default function TrainingPage() {
 
       {loadState === "ready" && total > 0 && (
         <>
-          {trainingComplete ? (
+          {agent?.certified ? (
+            <div className="mt-6 rounded-2xl border border-border bg-surface p-5 shadow-card">
+              <div className="flex items-center gap-3">
+                <span className="grid size-11 shrink-0 place-items-center rounded-full bg-success-soft text-[color:var(--color-success-strong)]">
+                  <CircleCheckBig className="size-6" aria-hidden />
+                </span>
+                <div>
+                  <h2 className="font-sans text-lg font-semibold text-ink-900">
+                    You&apos;re certified
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    No quiz needed: your referral code is active. Rewatch any
+                    video whenever you want a refresher.
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : trainingComplete ? (
             <div className="mt-6 rounded-2xl border border-border bg-surface p-5 shadow-card">
               <div className="flex items-center gap-3">
                 <span className="grid size-11 shrink-0 place-items-center rounded-full bg-success-soft text-[color:var(--color-success-strong)]">

@@ -73,10 +73,6 @@ export default function QuizPage() {
     } catch (err) {
       const g = parseGate(err);
       if (g) {
-        if (g.code === "already-certified") {
-          router.replace("/");
-          return;
-        }
         setGate(g);
         setPhase("gate");
       } else {
@@ -124,7 +120,17 @@ export default function QuizPage() {
     );
   }
 
+  // Pre-certified agents (admin-added) skip the quiz entirely; tell them so
+  // instead of bouncing them off the page. The same card covers a stale store
+  // where certification only surfaces via the start gate below.
+  if (phase === "idle" && agent?.certified) {
+    return <CertifiedCard />;
+  }
+
   if (phase === "gate" && gate) {
+    if (gate.code === "already-certified") {
+      return <CertifiedCard />;
+    }
     if (gate.code === "cooldown" && gate.retryAt) {
       return (
         <CooldownCard
@@ -215,6 +221,31 @@ export default function QuizPage() {
         <Button className="mt-5" fullWidth loading={starting} onClick={start}>
           Start quiz
         </Button>
+      </div>
+    </section>
+  );
+}
+
+function CertifiedCard() {
+  return (
+    <section className="fade-up">
+      <div className="mt-2 rounded-2xl border border-border bg-surface p-6 text-center shadow-card">
+        <span className="mx-auto grid size-12 place-items-center rounded-full bg-success-soft text-[color:var(--color-success-strong)]">
+          <GraduationCap className="size-6" aria-hidden />
+        </span>
+        <h1 className="mt-4 font-sans text-lg font-semibold text-ink-900">
+          You&apos;re already certified
+        </h1>
+        <p className="mx-auto mt-1.5 max-w-xs text-sm text-muted-foreground">
+          There&apos;s no quiz for you to take: your referral code is active
+          and you can start signing up customers right away.
+        </p>
+        <Link
+          href="/"
+          className={buttonClassName({ fullWidth: true, className: "mt-6" })}
+        >
+          Go to your dashboard
+        </Link>
       </div>
     </section>
   );
