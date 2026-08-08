@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { KycCard } from "@/components/kyc/kyc-card";
 import { NotificationsRow } from "@/components/home/notifications-card";
+import { TierBadge } from "@/components/tier/tier-badge";
 import type { KycStatus } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
 
@@ -62,7 +63,10 @@ export default function ProfilePage() {
 
   return (
     <section className="fade-up">
-      <h1 className="font-sans text-xl font-semibold text-ink-900">Profile</h1>
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="font-sans text-xl font-semibold text-ink-900">Profile</h1>
+        <TierBadge name={agent.tier?.name} />
+      </div>
 
       <dl className="mt-6 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface shadow-soft">
         <Row label="Name" value={agent.full_name} />

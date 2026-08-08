@@ -9,6 +9,7 @@ import { formatNaira } from "@/lib/format";
 import { ReferralCodeCard } from "@/components/home/referral-code-card";
 import { NotificationsCard } from "@/components/home/notifications-card";
 import { ChallengeStrip } from "@/components/challenges/challenge-strip";
+import { TierBadge } from "@/components/tier/tier-badge";
 import { Skeleton } from "@/components/ui/skeleton";
 
 function greetingFor(hour: number): string {
@@ -29,6 +30,9 @@ export default function HomePage() {
         {greeting}
         {firstName ? `, ${firstName}` : ""}
       </h1>
+      {/* Under the greeting rather than inside it: the serif line wraps on a
+          360px screen, and a chip wedged into it lands wherever the wrap does. */}
+      <TierBadge name={agent?.tier?.name} className="mt-2.5" />
 
       {agent?.referral_code ? (
         <>

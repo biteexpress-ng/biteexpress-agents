@@ -186,11 +186,40 @@ function roundRectPath(
   ctx.closePath();
 }
 
+/**
+ * The agent's standing, set small under the agent line. It is the last mark on
+ * both artifacts, so an agent with no tier gets exactly the artifact they got
+ * before this existed: nothing is drawn and no layout above it moves.
+ *
+ * Kept to the same muted colour and a size below the agent line so it reads as
+ * a credential rather than a claim. The artifacts still carry no numbers and no
+ * promises.
+ */
+function drawTierMark(
+  ctx: CanvasRenderingContext2D,
+  tierName: string | null | undefined,
+  cx: number,
+  y: number,
+  sizePx: number,
+  fonts: Fonts,
+  color: string,
+): void {
+  const name = (tierName ?? "").trim();
+  if (!name) return;
+
+  drawLine(ctx, `${name} agent`, cx, y, sizePx, fonts, {
+    weight: 600,
+    color,
+    letterSpacing: "0.08em",
+  });
+}
+
 /* ── poster ──────────────────────────────────────────────────────────────── */
 
 export async function renderPoster(
   code: string,
   firstName: string,
+  tierName?: string | null,
 ): Promise<Blob> {
   const { width, height } = POSTER_SIZE;
   const cx = width / 2;
@@ -291,6 +320,7 @@ export async function renderPoster(
     ? `Your BiteExpress agent: ${firstName}`
     : "Your BiteExpress agent";
   y = drawLine(ctx, agentLine, cx, y, 38, fonts, { weight: 500, color: MUTED });
+  drawTierMark(ctx, tierName, cx, y + 16, 34, fonts, MUTED);
 
   return canvasToBlob(canvas);
 }
@@ -300,6 +330,7 @@ export async function renderPoster(
 export async function renderStatusImage(
   code: string,
   firstName: string,
+  tierName?: string | null,
 ): Promise<Blob> {
   const { width, height } = STATUS_SIZE;
   const cx = width / 2;
@@ -393,7 +424,8 @@ export async function renderStatusImage(
   const agentLine = firstName
     ? `Your BiteExpress agent: ${firstName}`
     : "Your BiteExpress agent";
-  drawLine(ctx, agentLine, cx, y, 34, fonts, { weight: 500, color: INK400 });
+  y = drawLine(ctx, agentLine, cx, y, 34, fonts, { weight: 500, color: INK400 });
+  drawTierMark(ctx, tierName, cx, y + 14, 30, fonts, INK400);
 
   return canvasToBlob(canvas);
 }

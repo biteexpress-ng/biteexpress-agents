@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { getEarnings } from "@/lib/api/agent";
 import type {
+  AgentTier,
   EarningsResponse,
   LedgerEntry,
   WithdrawEligibility,
@@ -42,6 +43,7 @@ export default function EarningsPage() {
                   <ProjectorCard projection={first.projection} />
                 </div>
               )}
+              <TierProgressLine tier={first.tier} />
             </div>
           )}
           renderItem={(entry) => <LedgerRow entry={entry} />}
@@ -58,6 +60,28 @@ export default function EarningsPage() {
         />
       </div>
     </section>
+  );
+}
+
+/**
+ * How far the next rung is, in the one unit that moves it: customers who
+ * actually order. Framed as progress and never as a deadline, because the
+ * count only ever goes up and nothing is lost by taking longer. Silent on the
+ * top rung, and silent when tiers are off.
+ */
+function TierProgressLine({ tier }: { tier?: AgentTier | null }) {
+  const next = tier?.next;
+  if (!next) return null;
+
+  const customers = next.remaining === 1 ? "customer" : "customers";
+
+  return (
+    <p className="mt-3 text-center text-sm text-muted-foreground">
+      <span className="font-medium tabular-nums text-ink-800">
+        {next.remaining}
+      </span>{" "}
+      more active {customers} to {next.name}.
+    </p>
   );
 }
 

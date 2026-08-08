@@ -16,6 +16,7 @@ export default function PromotePage() {
   const agent = useAuthStore((s) => s.agent);
   const code = agent?.referral_code ?? null;
   const firstName = (agent?.full_name ?? "").trim().split(/\s+/)[0] ?? "";
+  const tierName = agent?.tier?.name ?? null;
 
   if (!code) {
     return (
@@ -64,6 +65,7 @@ export default function PromotePage() {
           description="A5 poster for shops, notice boards, and business centres."
           code={code}
           firstName={firstName}
+          tierName={tierName}
           render={renderPoster}
           filename={`biteexpress-poster-${code}.png`}
           width={1748}
@@ -77,6 +79,7 @@ export default function PromotePage() {
           description="A dark, phone-sized image for your status or story."
           code={code}
           firstName={firstName}
+          tierName={tierName}
           render={renderStatusImage}
           filename={`biteexpress-status-${code}.png`}
           width={1080}

@@ -1,3 +1,17 @@
+/**
+ * The agent's standing, computed server-side from their lifetime count of
+ * customers who have actually ordered. Null covers both "no tiers configured"
+ * and "not there yet", and both mean the same thing to the UI: render nothing.
+ */
+export interface AgentTier {
+  name: string;
+  /** Position on the ascending ladder, 0-based. */
+  index: number;
+  activated_count: number;
+  /** Null on the top rung. */
+  next: { name: string; threshold: number; remaining: number } | null;
+}
+
 export interface AgentProfile {
   id: number;
   full_name: string;
@@ -7,6 +21,8 @@ export interface AgentProfile {
   referral_code: string | null;
   training_complete: boolean;
   certified: boolean;
+  /** H1; absent on an older backend, so nothing tier-related renders. */
+  tier?: AgentTier | null;
 }
 
 export interface ApiError {
@@ -165,6 +181,8 @@ export interface EarningsResponse {
   eligibility: WithdrawEligibility;
   /** Absent on an older backend; the projector simply doesn't render. */
   projection?: EarningsProjection;
+  /** H1; absent on an older backend, so the progress line doesn't render. */
+  tier?: AgentTier | null;
   pagination: Pagination;
 }
 

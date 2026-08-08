@@ -5,13 +5,19 @@ import { Download, RefreshCw, Share2 } from "lucide-react";
 import { buttonClassName } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
-type RenderFn = (code: string, firstName: string) => Promise<Blob>;
+type RenderFn = (
+  code: string,
+  firstName: string,
+  tierName?: string | null,
+) => Promise<Blob>;
 
 interface ArtifactCardProps {
   title: string;
   description: string;
   code: string;
   firstName: string;
+  /** Passed straight through; absent or null draws no tier mark at all. */
+  tierName?: string | null;
   render: RenderFn;
   /** Download filename, e.g. `biteexpress-poster-CODE.png`. */
   filename: string;
@@ -39,6 +45,7 @@ export function ArtifactCard({
   description,
   code,
   firstName,
+  tierName,
   render,
   filename,
   width,
@@ -58,7 +65,7 @@ export function ArtifactCard({
     let objectUrl: string | null = null;
     setState("rendering");
 
-    render(code, firstName)
+    render(code, firstName, tierName)
       .then((blob) => {
         if (!active) return;
         const file = new File([blob], filename, { type: "image/png" });
@@ -80,7 +87,7 @@ export function ArtifactCard({
       active = false;
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
-  }, [code, firstName, render, filename, attempt]);
+  }, [code, firstName, tierName, render, filename, attempt]);
 
   const download = useCallback(() => {
     if (!url) return;
