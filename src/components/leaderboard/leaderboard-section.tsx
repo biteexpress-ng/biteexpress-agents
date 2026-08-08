@@ -28,6 +28,10 @@ export function LeaderboardSection({
   viewer,
   as = "h2",
 }: LeaderboardSectionProps) {
+  // No city, no board. The server withholds the city rather than guessing one,
+  // so there is nothing here to render and no section to head.
+  if (!board.enabled || !board.city_label) return null;
+
   const rows = board.rows ?? [];
   const lastWeek = board.last_week_top ?? [];
   const you = board.you ?? null;
@@ -35,9 +39,11 @@ export function LeaderboardSection({
   const Heading = as;
 
   // Off-board: the server already computed the real rank, so the pinned row is
-  // the same component with the viewer's own name filled in.
+  // the same component with the viewer's own name filled in. Never pinned to an
+  // empty board, where a "rank 1, 0 first orders" line would contradict the
+  // empty state directly above it and read as the fake row it is.
   const pinned: Row | null =
-    you && !rows.some((r) => r.is_you)
+    you && rows.length > 0 && !rows.some((r) => r.is_you)
       ? {
           rank: you.rank,
           first_name: viewer.firstName || "You",
@@ -60,7 +66,7 @@ export function LeaderboardSection({
         Your city this week
       </Heading>
       <p className="mt-1 text-sm text-muted-foreground">
-        {board.city_label ? `Agents in ${board.city_label}.` : "Agents near you."}
+        Agents in {board.city_label}.
       </p>
       {deadline && (
         <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
@@ -94,7 +100,11 @@ export function LeaderboardSection({
 
       {lastWeek.length > 0 && (
         <div className="mt-6">
-          <h3 className="text-sm font-medium text-ink-800">Last week</h3>
+          {/* Headings default to serif app-wide; serif is reserved for the
+              certification moment and the home greeting. */}
+          <h3 className="font-sans text-sm font-medium text-ink-800">
+            Last week
+          </h3>
           <ol className="mt-2 flex flex-col gap-1.5">
             {lastWeek.map((row) => (
               <li

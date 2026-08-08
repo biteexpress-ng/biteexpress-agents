@@ -48,7 +48,11 @@ export default function ChallengesPage() {
         if (!active) return;
 
         const challengeLive = challenge.active && challenge.current !== null;
-        const boardLive = board.enabled === true;
+        // An agent with no city gets the empty shape rather than a guessed
+        // board, so there is genuinely nothing to show them. Treating that as
+        // "no board" keeps them out of an empty section and, with challenges
+        // off, sends them home instead of to a blank screen.
+        const boardLive = board.enabled === true && Boolean(board.city_label);
 
         // Nothing on this screen is live. Leave quietly; deep links stay safe.
         if (!challengeLive && !boardLive) {
