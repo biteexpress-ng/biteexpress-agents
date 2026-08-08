@@ -11,6 +11,23 @@ export function formatNaira(n: number): string {
   return `₦${magnitude}`;
 }
 
+/**
+ * A week's end as a plain, informational deadline in the device's local time
+ * (Lagos for agents): "Ends Sunday, 11:59 PM". Deliberately a day plus a time
+ * and never a live countdown, so nothing near money reads as pressure.
+ */
+export function formatWeekDeadline(weekEndsAt: string | undefined): string | null {
+  if (!weekEndsAt) return null;
+  const d = new Date(weekEndsAt);
+  if (Number.isNaN(d.getTime())) return null;
+  const weekday = d.toLocaleDateString(undefined, { weekday: "long" });
+  const time = d.toLocaleTimeString(undefined, {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+  return `Ends ${weekday}, ${time}`;
+}
+
 /** Short date, e.g. "14 Jul". Empty string for an unparseable input. */
 export function formatDate(iso: string | null | undefined): string {
   if (!iso) return "";

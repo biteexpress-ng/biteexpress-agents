@@ -1,25 +1,10 @@
 import { CalendarClock } from "lucide-react";
 import type { ChallengeCurrent } from "@/lib/api/types";
+import { formatWeekDeadline } from "@/lib/format";
 import { StatPair } from "@/components/ui/stat-pair";
 
-/**
- * Format the week's end as a plain, informational deadline in the device's local
- * time (Lagos for agents) — "Ends Sunday, 11:59 PM". Deliberately a day + time,
- * never a live countdown: no urgency pressure near money.
- */
-function formatDeadline(weekEndsAt: string): string | null {
-  const d = new Date(weekEndsAt);
-  if (Number.isNaN(d.getTime())) return null;
-  const weekday = d.toLocaleDateString(undefined, { weekday: "long" });
-  const time = d.toLocaleTimeString(undefined, {
-    hour: "numeric",
-    minute: "2-digit",
-  });
-  return `Ends ${weekday}, ${time}`;
-}
-
 export function WeekHeader({ current }: { current: ChallengeCurrent }) {
-  const deadline = formatDeadline(current.week_ends_at);
+  const deadline = formatWeekDeadline(current.week_ends_at);
 
   return (
     <div>

@@ -3,46 +3,71 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
-import { getChallenge } from "@/lib/api/agent";
-import type { ChallengeAward, ChallengeCurrent } from "@/lib/api/types";
+import { getChallenge, getLeaderboard } from "@/lib/api/agent";
+import type {
+  ChallengeAward,
+  ChallengeCurrent,
+  LeaderboardResponse,
+} from "@/lib/api/types";
 import { formatNaira } from "@/lib/format";
+import { useAuthStore } from "@/stores/auth";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { WeekHeader } from "@/components/challenges/week-header";
 import { TierProgress } from "@/components/challenges/tier-progress";
 import { AwardRow } from "@/components/challenges/award-row";
+import { LeaderboardSection } from "@/components/leaderboard/leaderboard-section";
 
 type State =
   | { phase: "loading" }
   | { phase: "redirect" }
   | { phase: "error" }
-  | { phase: "ready"; current: ChallengeCurrent; past_awards: ChallengeAward[] };
+  | {
+      phase: "ready";
+      current: ChallengeCurrent | null;
+      past_awards: ChallengeAward[];
+      board: LeaderboardResponse | null;
+    };
+
+/** Off, unreachable, or from a backend that predates H1: all mean "no board". */
+const NO_BOARD: LeaderboardResponse = { enabled: false };
 
 export default function ChallengesPage() {
   const router = useRouter();
+  const agent = useAuthStore((s) => s.agent);
   const [state, setState] = useState<State>({ phase: "loading" });
 
   const load = useCallback(() => {
     let active = true;
     setState({ phase: "loading" });
-    getChallenge()
-      .then((data) => {
+
+    // The board is a bonus on this screen: a failure there must never take the
+    // challenge down with it, so it degrades to "no board" instead of throwing.
+    Promise.all([getChallenge(), getLeaderboard().catch(() => NO_BOARD)])
+      .then(([challenge, board]) => {
         if (!active) return;
-        // Feature is off, or nothing to show: leave quietly. Deep links are safe.
-        if (!data.active || !data.current) {
+
+        const challengeLive = challenge.active && challenge.current !== null;
+        const boardLive = board.enabled === true;
+
+        // Nothing on this screen is live. Leave quietly; deep links stay safe.
+        if (!challengeLive && !boardLive) {
           setState({ phase: "redirect" });
           router.replace("/");
           return;
         }
+
         setState({
           phase: "ready",
-          current: data.current,
-          past_awards: data.past_awards,
+          current: challengeLive ? challenge.current : null,
+          past_awards: challengeLive ? challenge.past_awards : [],
+          board: boardLive ? board : null,
         });
       })
       .catch(() => {
         if (active) setState({ phase: "error" });
       });
+
     return () => {
       active = false;
     };
@@ -67,12 +92,7 @@ export default function ChallengesPage() {
           <p className="mt-1 text-sm text-muted-foreground">
             Check your connection and try again.
           </p>
-          <Button
-            variant="secondary"
-            fullWidth
-            className="mt-5"
-            onClick={load}
-          >
+          <Button variant="secondary" fullWidth className="mt-5" onClick={load}>
             Try again
           </Button>
         </div>
@@ -80,7 +100,41 @@ export default function ChallengesPage() {
     );
   }
 
-  const { current, past_awards } = state;
+  const { current, past_awards, board } = state;
+  const viewer = {
+    firstName: (agent?.full_name ?? "").trim().split(/\s+/)[0] ?? "",
+    tierName: agent?.tier?.name ?? null,
+  };
+
+  return (
+    <section className="fade-up">
+      {current && (
+        <>
+          <ChallengeBlock current={current} past_awards={past_awards} />
+          {board && <hr className="mt-8 border-border" />}
+        </>
+      )}
+
+      {board && (
+        <div className={current ? "mt-8" : undefined}>
+          <LeaderboardSection
+            board={board}
+            viewer={viewer}
+            as={current ? "h2" : "h1"}
+          />
+        </div>
+      )}
+    </section>
+  );
+}
+
+function ChallengeBlock({
+  current,
+  past_awards,
+}: {
+  current: ChallengeCurrent;
+  past_awards: ChallengeAward[];
+}) {
   // Tiers are ascending and achieved tiers are always a prefix, so the first
   // unachieved tier is the one to lean on; higher tiers stay present but muted.
   const nearestIdx = current.tiers.findIndex((t) => !t.achieved);
@@ -89,7 +143,7 @@ export default function ChallengesPage() {
     : undefined;
 
   return (
-    <section className="fade-up">
+    <>
       <WeekHeader current={current} />
 
       {achievedTier && (
@@ -138,7 +192,7 @@ export default function ChallengesPage() {
           )}
         </div>
       </section>
-    </section>
+    </>
   );
 }
 

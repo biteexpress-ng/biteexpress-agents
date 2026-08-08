@@ -9,6 +9,7 @@ import { formatNaira } from "@/lib/format";
 import { ReferralCodeCard } from "@/components/home/referral-code-card";
 import { NotificationsCard } from "@/components/home/notifications-card";
 import { ChallengeStrip } from "@/components/challenges/challenge-strip";
+import { CityStrip } from "@/components/leaderboard/city-strip";
 import { TierBadge } from "@/components/tier/tier-badge";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -22,6 +23,7 @@ export default function HomePage() {
   const agent = useAuthStore((s) => s.agent);
   const firstName = (agent?.full_name ?? "").trim().split(/\s+/)[0] ?? "";
   const greeting = greetingFor(new Date().getHours());
+  const [challengeVisible, setChallengeVisible] = useState<boolean | null>(null);
 
   return (
     <section className="fade-up">
@@ -63,7 +65,10 @@ export default function HomePage() {
       )}
 
       <HomeNumbers />
-      <ChallengeStrip className="mt-3" />
+      <ChallengeStrip className="mt-3" onVisible={setChallengeVisible} />
+      {/* Both cards route to /challenges, so only one of them is ever useful.
+          Null means the strip has not reported yet: wait rather than flash. */}
+      {challengeVisible === false && <CityStrip className="mt-3" />}
     </section>
   );
 }

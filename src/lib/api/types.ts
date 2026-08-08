@@ -297,3 +297,34 @@ export interface ChallengeStatus {
   current: ChallengeCurrent | null;
   past_awards: ChallengeAward[];
 }
+
+/**
+ * One standing on the city board. First name, tier and two counts is the whole
+ * of it: no earnings, no full names, no contact details. `is_you` comes from
+ * the server so the viewer is never matched by name on the client.
+ */
+export interface LeaderboardRow {
+  rank: number;
+  first_name: string;
+  tier_name: string | null;
+  signups: number;
+  activations: number;
+  is_you: boolean;
+}
+
+/**
+ * GET /leaderboard. `enabled` false is the only field present when the feature
+ * is off. With it on, an agent whose city is unknown gets the empty shape:
+ * `you` null, no rows, no city label, and the PWA renders nothing.
+ */
+export interface LeaderboardResponse {
+  enabled: boolean;
+  city_label?: string | null;
+  week_key?: string;
+  /** ISO-8601 UTC; render in the device's local time. */
+  week_ends_at?: string;
+  rows?: LeaderboardRow[];
+  you?: { rank: number; signups: number; activations: number } | null;
+  /** Up to 3 rows from the previous week. */
+  last_week_top?: LeaderboardRow[];
+}

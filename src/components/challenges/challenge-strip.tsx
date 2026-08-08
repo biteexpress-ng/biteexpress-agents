@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { CheckCircle2, ChevronRight, Trophy } from "lucide-react";
 import { getChallenge } from "@/lib/api/agent";
@@ -14,7 +14,17 @@ import { formatNaira } from "@/lib/format";
  * once a tier is won. Self-fetches; on any failure or when the feature is off it
  * renders nothing — the home screen never shows a challenge error.
  */
-export function ChallengeStrip({ className }: { className?: string }) {
+export function ChallengeStrip({
+  className,
+  onVisible,
+}: {
+  className?: string;
+  /**
+   * Whether this strip ended up rendering anything. Home uses it to decide
+   * whether the city-board card is needed, so the two never stack.
+   */
+  onVisible?: (visible: boolean) => void;
+}) {
   const [data, setData] = useState<ChallengeStatus | null>(null);
 
   useEffect(() => {
@@ -25,19 +35,33 @@ export function ChallengeStrip({ className }: { className?: string }) {
       })
       .catch(() => {
         // Silent: the strip is a bonus on the home screen, never an error card.
+        if (active) setData({ active: false, current: null, past_awards: [] });
       });
     return () => {
       active = false;
     };
   }, []);
 
-  if (!data || !data.active || !data.current) return null;
-  const { current } = data;
+  const current = data?.active ? data.current : null;
+  const achieved =
+    current && current.achieved_tier
+      ? current.tiers.find((t) => t.name === current.achieved_tier)
+      : undefined;
+  const nearest = current?.tiers.find((t) => !t.achieved);
+  // Reported from the same condition the render below uses, so home can never
+  // hide its own card next to a strip that decided not to draw.
+  const visible = Boolean(current && (achieved || nearest));
 
-  const achieved = current.achieved_tier
-    ? current.tiers.find((t) => t.name === current.achieved_tier)
-    : undefined;
-  const nearest = current.tiers.find((t) => !t.achieved);
+  // Reported after the fetch settles, never during render. onVisible is
+  // deliberately not a dependency: it is a parent setter whose identity changes
+  // on every home render, and re-reporting the same boolean helps nobody.
+  const report = useRef(onVisible);
+  report.current = onVisible;
+  useEffect(() => {
+    if (data) report.current?.(visible);
+  }, [data, visible]);
+
+  if (!current) return null;
 
   const cardClass = cn(
     "block rounded-2xl border border-border bg-surface p-4 shadow-soft transition-colors hover:bg-canvas-sunken/50",

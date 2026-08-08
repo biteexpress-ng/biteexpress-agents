@@ -7,6 +7,7 @@ import type {
   CustomerList,
   EarningsResponse,
   KycStatusResponse,
+  LeaderboardResponse,
   PushConfig,
   QuizInfo,
   ResolveAccountResponse,
@@ -146,6 +147,10 @@ export function getWithdrawals(page = 1): Promise<WithdrawalsResponse> {
 
 export function getChallenge(): Promise<ChallengeStatus> {
   return api("/challenge");
+}
+
+export function getLeaderboard(): Promise<LeaderboardResponse> {
+  return api("/leaderboard");
 }
 
 export function getPushConfig(): Promise<PushConfig> {
