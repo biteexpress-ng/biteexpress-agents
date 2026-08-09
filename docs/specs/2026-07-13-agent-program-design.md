@@ -187,6 +187,8 @@ for onboarding vendors or riders.
 - **Phase C** — KYC + withdrawals end-to-end into admin panel. *Agents get paid.*
 - **Phase D** — Weekly challenges + notifications + admin analytics. *Agents
   compete.*
+- **Phase E** — Marketing kit (gated 2026-07-14): client-side QR poster + WhatsApp
+  status image + share templates at `/promote`. *Agents are armed.*
 - **Launch gate:** finance signs off commission rate and challenge amounts before
   the program toggle goes on.
 
@@ -202,3 +204,66 @@ dev-server force-kill probes, per standing environment rule).
 - Agents must have a smartphone with internet, and install the BiteExpress user
   app, rider app, and use the WhatsApp ordering bot to understand the ecosystem —
   enforced through training content and quiz questions, not technical checks.
+
+## 12. Post-launch roadmap (locked 2026-07-14, sequenced after the launch runbook)
+
+Principle: world-class agent networks (M-Pesa, Moniepoint, JForce) win on trust
+in the money and status among peers, not feature count. Clusters ship in order;
+each becomes one or two gated phases in the standard prompt-build-gate workflow.
+
+Status note (2026-08-09): F and G shipped and live; H built, awaiting gate.
+
+### F — Trust engine (first post-launch cluster) — SHIPPED
+- **F1 Real-time earning notifications:** push (VAPID web push, absorbing the
+  earlier payout/KYC notification backlog) fired when a delivered order credits
+  commission, plus reversals, bonuses, withdraw and KYC decisions.
+- **F2 Payout reliability as product:** auto-approve-eligibility (express) lane
+  for verified KYC + N clean payouts under an admin-tunable ceiling (approval
+  stays human; auto-approve never auto-pays); visible payout SLA in the PWA;
+  Paystack bank account-name resolution at KYC.
+- **F3 Earnings what-if projector:** client-side projection from the agent's own
+  last 30 days (illustrative admin-set average as fallback; estimates only,
+  never invented numbers).
+
+### G — Working the book — SHIPPED
+- **G1 Quiet-customer nudges:** two segments (never-ordered, gone-quiet at
+  admin-tunable N days) annotated on the customers list; human-only outreach via
+  the E1 follow-up template; mark-contacted cooldown; append-only contact events
+  for later nudge-to-reorder measurement. Recency buckets only, never spend.
+- **G1.1 Admin KYC alert:** FCM banner + persistent sidebar pending-count badge
+  when an agent's KYC enters review.
+
+### H — Status and competition — BUILT
+- **H1 Agent tiers** keyed to ACTIVE customers (lifetime activated referrals,
+  monotonic, no demotions), config in `agent_tiers` (seed [] = off); one perk:
+  per-tier express withdrawal ceiling. Tier computed, never stored; tier-up push
+  at the crossing activation. **City-scoped weekly leaderboards** on
+  `agents.city_slug` (flag `agent_leaderboard_enabled`, seed 0); first name +
+  tier + weekly counts only; top 10 + pinned viewer rank; no cash prizes
+  (leaderboards are status; money stays in challenges).
+
+### I — Program operations
+- **I1 ROI dashboard (admin/finance):** agent-acquired vs organic — retention
+  curve, order frequency, revenue per customer, effective CAC including lifetime
+  commission paid. Read-only over orders + agent_referrals.
+- **I2 Agent-churn ops:** admin view of agents with zero signups in 30 days; the
+  existing Thursday nudge command carries a re-activation message.
+- **I3 Broadcast channel:** admin composes → PWA announcement (optionally WA
+  template) to all or zone-filtered agents.
+
+### Interleaved when dependencies clear
+- **`?ref=` capture on bite.express** once posters are in the field (attribution
+  + carry-the-code banner; separate repo, biteexpress-web).
+- **Vendor/rider referral bounties** once finance lands the payout structure.
+  Locked shape: milestone bounty ladder (lead approved → live → first N delivered
+  orders from distinct customers) or time-boxed commission share; NEVER lifetime
+  % of store volume. Riders: flat bounty at Nth completed delivery. First-touch
+  attribution at lead creation, deduped against the existing partner_leads/BD
+  pipeline; admin approval remains the human gate.
+
+### Explicitly rejected
+- Agent-refers-agent override commissions (MLM optics; shifts energy from
+  customers to recruitment). Agent recruitment stays a flat, milestone-gated
+  finder's fee at most, via partner_leads.
+- Exposing customer spend/cart/order contents to agents (recency only, ever).
+- A native agent app (the PWA is the platform).
